@@ -14,6 +14,10 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
+    var pin: Pin!
+    
+    var dataController: DataController!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
