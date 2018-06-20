@@ -62,11 +62,16 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="gestureRecognizer" destination="Yrx-Xf-8q0" id="jq2-Y8-UcL"/>
                         <outlet property="mapView" destination="PbK-Ow-BEN" id="I0g-6V-vCh"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="O1Y-kS-hch" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="Yrx-Xf-8q0"/>
+                <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="0.5" id="Yrx-Xf-8q0">
+                    <connections>
+                        <action selector="getTouchLocation:" destination="FEr-uI-0sh" id="BnU-th-btx"/>
+                    </connections>
+                </pongPressGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="461.60000000000002" y="-35.532233883058474"/>
         </scene>
