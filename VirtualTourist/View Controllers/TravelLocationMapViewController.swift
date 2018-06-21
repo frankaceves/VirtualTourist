@@ -8,13 +8,14 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     @IBOutlet var mapView: MKMapView!
     
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
-    var pin: Pin!
+    //var pin: Pin!
     
     var dataController: DataController!
     
@@ -41,7 +42,18 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
             
             //add annotation to map
             self.mapView.addAnnotation(annotation)
+            
+            //save pin and coordinate
+            addPin(coordinate: coordinate)
         }
+    }
+    
+    func addPin(coordinate: CLLocationCoordinate2D) {
+        let pin = Pin(context: dataController.viewContext)
+        pin.latitude = Float(coordinate.latitude)
+        pin.longitude = Float(coordinate.longitude)
+        print("current pin info: \(pin)")
+        try? dataController.viewContext.save()
     }
     
     // MARK: - MKMapViewDelegate
