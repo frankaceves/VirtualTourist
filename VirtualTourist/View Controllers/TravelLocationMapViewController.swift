@@ -15,7 +15,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
-    //var pin: Pin!
+    var pin: Pin!
     
     var dataController: DataController!
     
