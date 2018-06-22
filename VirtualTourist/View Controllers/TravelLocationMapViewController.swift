@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
+class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
     @IBOutlet var mapView: MKMapView!
     
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
@@ -19,12 +19,47 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
     
     var dataController: DataController!
     
+    var fetchedResultsController: NSFetchedResultsController<Pin>!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         mapView.delegate = self
+        setupFetchedResultsController()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        //print("viewWIllAppear")
+        setupFetchedResultsController()
     }
 
+    fileprivate func setupFetchedResultsController() {
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            print("total objects with ID: \(String(describing: fetchedObjects.count))")
+            //print("fetched objects: \(fetchedObjects)")
+            
+            for object in fetchedObjects {
+                print("object id: \(object.id!)")
+            }
+        }
+        
+        
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -52,6 +87,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         let pin = Pin(context: dataController.viewContext)
         pin.latitude = Float(coordinate.latitude)
         pin.longitude = Float(coordinate.longitude)
+        pin.id = String(arc4random())
         print("current pin info: \(pin)")
         try? dataController.viewContext.save()
     }
@@ -75,6 +111,8 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate {
         
         return pinView
     }
+    
+    
 
 }
 
