@@ -33,6 +33,35 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         //print("viewWIllAppear")
         setupFetchedResultsController()
     }
+    
+    fileprivate func loadPins() {
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            print("total objects with ID: \(String(describing: fetchedObjects.count))")
+            //print("fetched objects: \(fetchedObjects)")
+            
+            
+            var annotations = [MKPointAnnotation]()
+            
+            //iterate through fetchedObjects
+            for object in fetchedObjects {
+                
+                //gather lat & lon to create coordinates
+                let lat = CLLocationDegrees(object.latitude)
+                let long = CLLocationDegrees(object.longitude)
+                
+                let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                
+                //create annotation
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = coordinate
+                
+                annotations.append(annotation)
+            }
+            
+            //add annotation to map
+            self.mapView.addAnnotations(annotations)
+        }
+    }
 
     fileprivate func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -48,16 +77,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             fatalError("The fetch could not be performed: \(error.localizedDescription)")
         }
         
-        if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            print("total objects with ID: \(String(describing: fetchedObjects.count))")
-            //print("fetched objects: \(fetchedObjects)")
-            
-            for object in fetchedObjects {
-                print("object id: \(object.id!)")
-            }
-        }
-        
-        
+       self.loadPins()
     }
     
     override func didReceiveMemoryWarning() {
@@ -102,8 +122,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
             //pinView!.canShowCallout = true
             pinView!.pinTintColor = UIColor.red
-            pinView?.animatesDrop = true
-            
+            pinView?.animatesDrop = false
             
         } else {
             pinView!.annotation = annotation
@@ -111,8 +130,5 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         
         return pinView
     }
-    
-    
-
 }
 
