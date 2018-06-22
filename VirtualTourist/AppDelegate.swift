@@ -26,7 +26,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let travelViewController = navigationController.topViewController as! TravelLocationMapViewController
         travelViewController.dataController = dataController
         
+        checkIfFirstLaunch()
         return true
+    }
+    
+    func checkIfFirstLaunch() {
+        if UserDefaults.standard.bool(forKey: "hasLaunchedBefore") {
+            print("App has launched before")
+        } else {
+            print("This is the first launch ever!")
+            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
+            //set maprange setting
+            //UserDefaults.standard.set(<#T##value: Any?##Any?#>, forKey: <#T##String#>)
+            
+            UserDefaults.standard.synchronize()
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
