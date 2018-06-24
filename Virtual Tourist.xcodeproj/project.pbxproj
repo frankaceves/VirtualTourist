@@ -41,6 +41,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		281F503620E064A300112EE5 /* Flickr */ = {
+			isa = PBXGroup;
+			children = (
+				281F503420E058EF00112EE5 /* FlickrConstants.swift */,
+			);
+			path = Flickr;
+			sourceTree = "<group>";
+		};
 		28AEECBA20CE2E8700A505D6 = {
 			isa = PBXGroup;
 			children = (
@@ -84,7 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				7C5B0CFB20DA93C70003A5E0 /* DataController.swift */,
-				281F503420E058EF00112EE5 /* FlickrConstants.swift */,
+				281F503620E064A300112EE5 /* Flickr */,
 			);
 			path = Model;
 			sourceTree = "<group>";
