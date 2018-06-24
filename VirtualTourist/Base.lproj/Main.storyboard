@@ -75,10 +75,10 @@
             </objects>
             <point key="canvasLocation" x="461.60000000000002" y="-35.532233883058474"/>
         </scene>
-        <!--View Controller-->
+        <!--Photo Album View Controller-->
         <scene sceneID="Qm6-U1-fP7">
             <objects>
-                <viewController id="uY8-CS-xvs" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="photoAlbumViewController" title="Virtual Tourist" id="uY8-CS-xvs" userLabel="Photo Album View Controller" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="afm-TE-1MW">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
