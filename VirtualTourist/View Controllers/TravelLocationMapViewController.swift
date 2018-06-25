@@ -21,8 +21,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     var fetchedResultsController: NSFetchedResultsController<Pin>!
     
-    var mapRange = MKCoordinateRegion()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -39,21 +37,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         print("view will disappear")
-        setMapRegion()
-    }
-    
-    func setRange() {
-        mapRange.center.latitude = CLLocationDegrees(UserDefaults.standard.float(forKey: "centerLat"))
-        mapRange.center.longitude = CLLocationDegrees(UserDefaults.standard.float(forKey: "centerLon"))
-        mapRange.span.latitudeDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "latDelta"))
-        mapRange.span.longitudeDelta = CLLocationDegrees(UserDefaults.standard.float(forKey: "lonDelta"))
-    }
-    
-    func setMapRegion() {
-        UserDefaults.standard.set(mapView.region.center.latitude, forKey: "centerLat")
-        UserDefaults.standard.set(mapView.region.center.longitude, forKey: "centerLon")
-        UserDefaults.standard.set(mapView.region.span.latitudeDelta, forKey: "latDelta")
-        UserDefaults.standard.set(mapView.region.span.longitudeDelta, forKey: "lonDelta")
     }
     
     fileprivate func loadPins() {
