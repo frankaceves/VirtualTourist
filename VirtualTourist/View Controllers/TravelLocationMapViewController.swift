@@ -125,7 +125,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         
         if pinView == nil {
             pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
-            //pinView!.canShowCallout = true
+            pinView!.canShowCallout = false
             pinView!.pinTintColor = UIColor.red
             pinView?.animatesDrop = false
             
@@ -134,6 +134,14 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         }
         
         return pinView
+    }
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        //access core data Pin entity
+        //need fetch request?
+        //get lat/lon to send to photoAlbumViewController
+        print("annotation coordinate: \(view.annotation!.coordinate)")
+        
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
