@@ -110,8 +110,8 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     func addPin(coordinate: CLLocationCoordinate2D) {
         let pin = Pin(context: dataController.viewContext)
-        pin.latitude = Float(coordinate.latitude)
-        pin.longitude = Float(coordinate.longitude)
+        pin.latitude = coordinate.latitude
+        pin.longitude = coordinate.longitude
         pin.id = String(arc4random())
         print("current pin info: \(pin)")
         try? dataController.viewContext.save()
