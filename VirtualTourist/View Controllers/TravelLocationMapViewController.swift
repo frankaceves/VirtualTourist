@@ -140,6 +140,10 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         if segue.identifier == "showPhotoAlbum" {
             //send lat & long to new VC
             print("showPhotoAlbum seque triggered")
+            let vc = segue.destination as? PhotoAlbumViewController
+            
+            let coordinate = self.mapView.selectedAnnotations[0].coordinate
+            vc?.currentCoordinate = coordinate
         }
     }
     
