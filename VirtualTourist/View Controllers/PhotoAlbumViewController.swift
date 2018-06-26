@@ -26,6 +26,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        print("current coordinate: \(currentCoordinate!)")
     }
     
     override func didReceiveMemoryWarning() {
