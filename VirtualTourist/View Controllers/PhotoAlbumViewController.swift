@@ -14,6 +14,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     var currentPinLatitude: Double!
     var currentPinLongitude: Double!
+    var currentCoordinate: CLLocationCoordinate2D!
     
     @IBOutlet weak var mapView: MKMapView!
     
