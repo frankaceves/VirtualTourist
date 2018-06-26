@@ -30,6 +30,19 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         // Dispose of any resources that can be recreated.
     }
     
+    func configMap() {
+        let lat = CLLocationDegrees(currentPinLatitude)
+        let long = CLLocationDegrees(currentPinLongitude)
+        
+        let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+        
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        
+        let mapSpan = MKCoordinateSpanMake(0.02, 0.02)
+        let region = MKCoordinateRegion(center: coordinate, span: mapSpan)
+        self.mapView.setRegion(region, animated: true)
+    }
 
     /*
     // MARK: - Navigation
