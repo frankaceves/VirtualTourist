@@ -20,7 +20,8 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        mapView.delegate = self
+        configMap()
         // Do any additional setup after loading the view.
     }
     
@@ -35,17 +36,39 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     }
     
     func configMap() {
-        let lat = CLLocationDegrees(currentPinLatitude)
-        let long = CLLocationDegrees(currentPinLongitude)
+        let lat = currentCoordinate.latitude
+        let long = currentCoordinate.longitude
         
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
         
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
         
-        let mapSpan = MKCoordinateSpanMake(0.02, 0.02)
+        let mapSpan = MKCoordinateSpanMake(0.007, 0.007)
         let region = MKCoordinateRegion(center: coordinate, span: mapSpan)
         self.mapView.setRegion(region, animated: true)
+        
+        self.mapView.addAnnotation(annotation)
+        //self.mapView.selectAnnotation(annotation, animated: true)
+    }
+    
+    // MARK: - MKMapViewDelegate
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        let reuseID = "pin2"
+        
+        var pinView = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID) as? MKPinAnnotationView
+        
+        if pinView == nil {
+            pinView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+            pinView!.canShowCallout = false
+            pinView!.pinTintColor = UIColor.red
+            pinView?.animatesDrop = false
+            
+        } else {
+            pinView!.annotation = annotation
+        }
+        
+        return pinView
     }
 
     /*
