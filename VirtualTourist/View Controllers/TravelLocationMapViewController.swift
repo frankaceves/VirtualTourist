@@ -30,13 +30,11 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("viewWIllAppear")
         setupFetchedResultsController()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        print("view will disappear")
     }
     
     fileprivate func loadPins() {
@@ -113,7 +111,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         pin.latitude = coordinate.latitude
         pin.longitude = coordinate.longitude
         pin.id = String(arc4random())
-        print("current pin info: \(pin)")
         try? dataController.viewContext.save()
     }
     
@@ -139,18 +136,13 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showPhotoAlbum" {
             //send lat & long to new VC
-            print("showPhotoAlbum seque triggered")
             let vc = segue.destination as? PhotoAlbumViewController
-            
             let coordinate = self.mapView.selectedAnnotations[0].coordinate
             vc?.currentCoordinate = coordinate
         }
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        //access core data Pin entity
-        //need fetch request?
-        //get lat/lon to send to photoAlbumViewController
         print("annotation coordinate: \(view.annotation!.coordinate)")
         self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         
