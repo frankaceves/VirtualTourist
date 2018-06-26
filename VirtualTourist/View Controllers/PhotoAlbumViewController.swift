@@ -44,7 +44,7 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         let annotation = MKPointAnnotation()
         annotation.coordinate = coordinate
         
-        let mapSpan = MKCoordinateSpanMake(0.007, 0.007)
+        let mapSpan = MKCoordinateSpanMake(0.02, 0.02)
         let region = MKCoordinateRegion(center: coordinate, span: mapSpan)
         self.mapView.setRegion(region, animated: true)
         
