@@ -12,6 +12,9 @@ import CoreData
 
 class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
     
+    var currentPinLatitude: Double!
+    var currentPinLongitude: Double!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
