@@ -57,7 +57,7 @@
                         <barButtonItem key="backBarButtonItem" title="Back" id="bU8-PK-a6b"/>
                         <barButtonItem key="rightBarButtonItem" title="EDIT" id="B7A-9L-Is2">
                             <connections>
-                                <segue destination="uY8-CS-xvs" kind="show" id="zv0-a8-m5T"/>
+                                <segue destination="uY8-CS-xvs" kind="show" identifier="showPhotoAlbum" id="zv0-a8-m5T"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>

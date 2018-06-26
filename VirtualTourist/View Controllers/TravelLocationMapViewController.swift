@@ -136,11 +136,19 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         return pinView
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showPhotoAlbum" {
+            //send lat & long to new VC
+            print("showPhotoAlbum seque triggered")
+        }
+    }
+    
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         //access core data Pin entity
         //need fetch request?
         //get lat/lon to send to photoAlbumViewController
         print("annotation coordinate: \(view.annotation!.coordinate)")
+        self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         
     }
     
