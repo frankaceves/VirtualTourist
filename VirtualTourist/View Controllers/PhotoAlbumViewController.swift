@@ -49,7 +49,6 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         self.mapView.setRegion(region, animated: true)
         
         self.mapView.addAnnotation(annotation)
-        //self.mapView.selectAnnotation(annotation, animated: true)
     }
     
     // MARK: - MKMapViewDelegate
