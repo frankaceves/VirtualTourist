@@ -36,7 +36,7 @@ extension FlickrClient {
             static let SearchMethod = "flickr.photos.search"
             static let APIKey = "ad57c918d7705a17a075a02858b94f59"
             static let ResponseRadius = "1" // 1 mile radius
-            static let ResponseResultsPerPage = "25"
+            static let ResponseResultsPerPage = "100"
             static let ResponseFormat = "json"
             static let DisableJSONCallback = "1" // 1 means "yes"
             

@@ -16,6 +16,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     @IBOutlet var gestureRecognizer: UILongPressGestureRecognizer!
     
     var pin: Pin!
+    var objectID: NSManagedObjectID!
     
     var dataController: DataController!
     
@@ -133,24 +134,51 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         return pinView
     }
     
+    
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        print("annotation coordinate: \(view.annotation!.coordinate)")
+        if checkForMatching(coordinate: view.annotation!.coordinate) {
+            self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
+        } else {
+            print("can't segue")
+        }
+    }
+    
+    //check selected annotation's coordinate, and compare to fetched objects
+    func checkForMatching(coordinate: CLLocationCoordinate2D) -> Bool {
+        if let savedPins = fetchedResultsController.fetchedObjects {
+            for pin in savedPins {
+                print("pin lat: \(pin.latitude)\npin lon: \(pin.longitude)")
+                print("coordinate lat: \(coordinate.latitude)\ncoordinate lon: \(coordinate.longitude)")
+                if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
+                    print("numbers match! PinID: \(pin.objectID)")
+                    self.objectID = pin.objectID
+                    return true
+                } else {
+                    print("numbers don't match")
+                }
+            }
+        }
+        return false
+    }
+    
+    
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        print("region changed")
+        print("mapView.region: \(mapView.region)")
+    }
+    
+    // MARK: - NAVIGATION
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showPhotoAlbum" {
             //send lat & long to new VC
             let vc = segue.destination as? PhotoAlbumViewController
             let coordinate = self.mapView.selectedAnnotations[0].coordinate
+
             vc?.currentCoordinate = coordinate
+            vc?.dataController = dataController
+            
         }
-    }
-    
-    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        print("annotation coordinate: \(view.annotation!.coordinate)")
-        self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
-        
-    }
-    
-    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        print("region changed")
-        print("mapView.region: \(mapView.region)")
     }
 }
 

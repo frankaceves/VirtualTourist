@@ -95,23 +95,35 @@
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" verticalCompressionResistancePriority="749" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="dos-ch-mDA">
                                         <rect key="frame" x="0.0" y="125" width="375" height="428"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" priority="999" constant="75" id="wRf-Gd-c49"/>
-                                        </constraints>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="xf1-xn-uZ5">
-                                            <size key="itemSize" width="50" height="50"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="5" minimumInteritemSpacing="5" id="xf1-xn-uZ5">
+                                            <size key="itemSize" width="120" height="120"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                            <inset key="sectionInset" minX="5" minY="5" maxX="5" maxY="5"/>
                                         </collectionViewFlowLayout>
                                         <cells>
-                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="locationImages" id="rwH-Uj-Zto">
-                                                <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                            <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="photoCell" id="rwH-Uj-Zto" customClass="LocationImageCollectionViewCell" customModule="Virtual_Tourist" customModuleProvider="target">
+                                                <rect key="frame" x="5" y="5" width="120" height="120"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
-                                                    <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
                                                     <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ox7-UN-ZsV">
+                                                            <rect key="frame" x="0.0" y="0.0" width="120" height="120"/>
+                                                            <color key="backgroundColor" red="0.7019608021" green="0.7019608021" blue="0.7019608021" alpha="1" colorSpace="calibratedRGB"/>
+                                                        </imageView>
+                                                    </subviews>
                                                 </view>
+                                                <constraints>
+                                                    <constraint firstItem="ox7-UN-ZsV" firstAttribute="top" secondItem="rwH-Uj-Zto" secondAttribute="top" id="8Cb-wF-iPw"/>
+                                                    <constraint firstItem="ox7-UN-ZsV" firstAttribute="leading" secondItem="rwH-Uj-Zto" secondAttribute="leading" id="AZk-O1-E7u"/>
+                                                    <constraint firstAttribute="bottom" secondItem="ox7-UN-ZsV" secondAttribute="bottom" id="IZt-ps-fOo"/>
+                                                    <constraint firstAttribute="trailing" secondItem="ox7-UN-ZsV" secondAttribute="trailing" id="nyV-mU-vtE"/>
+                                                </constraints>
+                                                <connections>
+                                                    <outlet property="locationPhoto" destination="ox7-UN-ZsV" id="MjF-jV-in2"/>
+                                                </connections>
                                             </collectionViewCell>
                                         </cells>
                                     </collectionView>
@@ -145,6 +157,7 @@
                         <viewLayoutGuide key="safeArea" id="Yuz-I7-EXi"/>
                     </view>
                     <connections>
+                        <outlet property="collectionView" destination="dos-ch-mDA" id="OJ5-Wq-7Sv"/>
                         <outlet property="mapView" destination="MbB-aI-D29" id="Ri7-0B-fpD"/>
                     </connections>
                 </viewController>

@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let travelViewController = navigationController.topViewController as! TravelLocationMapViewController
         travelViewController.dataController = dataController
         
+        
         checkIfFirstLaunch()
         return true
     }

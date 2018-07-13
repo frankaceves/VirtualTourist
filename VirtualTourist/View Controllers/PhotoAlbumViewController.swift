@@ -10,7 +10,15 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+    
+    var dataController: DataController!
+    
+    var photo: Photo?
+    var pin: Pin!
+    var objectID: NSManagedObjectID!
+    
+    var fetchedResultsController: NSFetchedResultsController<Pin>!
     
     var currentPinLatitude: Double!
     var currentPinLongitude: Double!
@@ -18,21 +26,65 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
     
     @IBOutlet weak var mapView: MKMapView!
     
+    @IBOutlet var collectionView: UICollectionView!
+    var downloadedPhotos = [Data]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
+        collectionView.dataSource = self
         configMap()
+        setupFetchedResultsController()
         // Do any additional setup after loading the view.
+        print("view Did Load")
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("current coordinate: \(currentCoordinate!)")
+        print("view WIll Appear")
+        setupFetchedResultsController()
+        getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        print("view will disappear")
+        savePhotos()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        fetchedResultsController = nil
+    }
+    
+    func setupFetchedResultsController() {
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
+        
+        let newLatitude = String(currentCoordinate.latitude).dropLast(2)
+        
+        let newLongitude = String(currentCoordinate.longitude).dropLast(2)
+        
+        let predicate: NSPredicate?
+        //predicate = NSPredicate(format: "latitude BEGINSWITH %@", newLatitude as CVarArg)
+        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
+        fetchRequest.predicate = predicate
+        
+        let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        print("fetchRequest: \(fetchRequest)")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+        
+        // testing Fetch
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            print("fetched Objects: \(fetchedObjects)")
+        }
     }
     
     func configMap() {
@@ -68,6 +120,61 @@ class PhotoAlbumViewController: UIViewController, MKMapViewDelegate, NSFetchedRe
         }
         
         return pinView
+    }
+    
+    // MARK: - PHOTO DOWNLOAD FUNCTIONS
+    func getPhotos(lat: Double, lon: Double) {
+        FlickrClient.sharedInstance().downloadPhotosForLocation(lat: lat, lon: lon) { (images, error) in
+            if error != nil {
+                print("error creating images: \(error!)")
+            }
+            
+            guard let images = images else {
+                print("no images returned")
+                return
+            }
+            
+            for image in images {
+                let photo = Photo(context: self.dataController.viewContext)
+                photo.image = image
+                self.downloadedPhotos.append(image)
+            }
+
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+        }
+        
+    }
+    
+    // MARK: - PERSIST PHOTOS
+    
+    func savePhotos() {
+        if dataController.viewContext.hasChanges {
+            do {
+                try dataController.viewContext.save()
+            } catch {
+                print("an error occurred while saving: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - COLLECTION VIEW
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        //print("downloadedPhotos Count: \(downloadedPhotos.count)")
+        //return downloadedPhotos.count
+        fetchedResultsController.fetchedObjects
+        print("fetchedObjects: \(fetchedResultsController.fetchedObjects?.count ?? 3)")
+        return fetchedResultsController.fetchedObjects?.count ?? 3
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
+        let photo = self.downloadedPhotos[indexPath.item]
+        
+        cell.locationPhoto.image = UIImage(data: photo)
+        return cell
     }
 
     /*
