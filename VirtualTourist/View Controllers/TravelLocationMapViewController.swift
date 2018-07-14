@@ -17,7 +17,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     var pin: Pin!
     var objectID: NSManagedObjectID!
-    
+    var objectToPass: NSManagedObject!
     var dataController: DataController!
     
     var fetchedResultsController: NSFetchedResultsController<Pin>!
@@ -112,7 +112,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         pin.latitude = coordinate.latitude
         pin.longitude = coordinate.longitude
         pin.id = String(arc4random())
-        try? dataController.viewContext.save()
+        try! dataController.viewContext.save()
     }
     
     // MARK: - MKMapViewDelegate
@@ -141,6 +141,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         } else {
             print("can't segue")
+            return
         }
     }
     
@@ -177,7 +178,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
 
             vc?.currentCoordinate = coordinate
             vc?.dataController = dataController
-            
+            vc?.objectID = self.objectID
         }
     }
 }

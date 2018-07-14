@@ -14,11 +14,17 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var dataController: DataController!
     
-    var photo: Photo?
+    //the location whose photos are being displayed
     var pin: Pin!
+    
+    var photo: Photo?
+    
+    //the ID passed from the selected pin in prev VC
     var objectID: NSManagedObjectID!
     
-    var fetchedResultsController: NSFetchedResultsController<Pin>!
+    var location: NSManagedObject!
+    
+    var fetchedResultsController: NSFetchedResultsController<Photo>!
     
     var currentPinLatitude: Double!
     var currentPinLongitude: Double!
@@ -34,7 +40,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         mapView.delegate = self
         collectionView.dataSource = self
         configMap()
-        setupFetchedResultsController()
+        //setupFetchedResultsController()
         // Do any additional setup after loading the view.
         print("view Did Load")
     }
@@ -42,8 +48,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("view WIll Appear")
-        setupFetchedResultsController()
+        pin = getObjectFromPassed(id: objectID) as! Pin
+        print("pinInfo: \(pin!)")
+        
         getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
+        //setupFetchedResultsController()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -57,19 +66,30 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         fetchedResultsController = nil
     }
     
+    func getObjectFromPassed(id: NSManagedObjectID) -> NSManagedObject {
+        var location = NSManagedObject()
+        do {
+            location = try dataController.viewContext.existingObject(with: objectID)
+        } catch {
+            print("could not get object: \(error.localizedDescription)")
+        }
+        print("managedObject: \(location)")
+        print("managedObject photos: \(location.objectIDs(forRelationshipNamed: "photos"))")
+        return location
+    }
+    
     func setupFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
-        
-        let newLatitude = String(currentCoordinate.latitude).dropLast(2)
-        
-        let newLongitude = String(currentCoordinate.longitude).dropLast(2)
-        
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        //let id = objectID
         let predicate: NSPredicate?
-        //predicate = NSPredicate(format: "latitude BEGINSWITH %@", newLatitude as CVarArg)
-        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
+        
+//        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
+        predicate = NSPredicate(format: "location == %@", pin)
         fetchRequest.predicate = predicate
         
-        let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
+        
+        //let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
+        let sortDescriptor = NSSortDescriptor()
         fetchRequest.sortDescriptors = [sortDescriptor]
         print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
@@ -137,6 +157,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             for image in images {
                 let photo = Photo(context: self.dataController.viewContext)
                 photo.image = image
+                photo.location = self.pin
+                //photo.location?.latitude = self.pin.latitude
+                //photo.location?.longitude = self.pin.longitude
+                print("photoInfo: \(photo)")
                 self.downloadedPhotos.append(image)
             }
 
@@ -154,18 +178,19 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             do {
                 try dataController.viewContext.save()
             } catch {
-                print("an error occurred while saving: \(error)")
+                print("an error occurred while saving: \(error.localizedDescription)")
             }
         }
     }
     
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        //print("downloadedPhotos Count: \(downloadedPhotos.count)")
-        //return downloadedPhotos.count
-        fetchedResultsController.fetchedObjects
-        print("fetchedObjects: \(fetchedResultsController.fetchedObjects?.count ?? 3)")
-        return fetchedResultsController.fetchedObjects?.count ?? 3
+        print("downloadedPhotos Count: \(downloadedPhotos.count)")
+        return downloadedPhotos.count
+        //fetchedResultsController.fetchedObjects
+        //print("fetchedObjects: \(fetchedResultsController.fetchedObjects?.count ?? 3)")
+        //return fetchedResultsController.fetchedObjects?.count ?? 3
+        //return 1
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
