@@ -24,7 +24,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var location: NSManagedObject!
     
-    var fetchedResultsController: NSFetchedResultsController<Photo>!
+    var fetchedResultsController: NSFetchedResultsController<Pin>!
     
     var currentPinLatitude: Double!
     var currentPinLongitude: Double!
@@ -48,11 +48,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("view WIll Appear")
-        pin = getObjectFromPassed(id: objectID) as! Pin
-        print("pinInfo: \(pin!)")
+        //location = getObjectFromPassed(id: objectID)
         
         getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
-        //setupFetchedResultsController()
+        setupFetchedResultsController()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -70,6 +69,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         var location = NSManagedObject()
         do {
             location = try dataController.viewContext.existingObject(with: objectID)
+            return location
         } catch {
             print("could not get object: \(error.localizedDescription)")
         }
@@ -79,18 +79,19 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     func setupFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
         //let id = objectID
-        let predicate: NSPredicate?
+        //let predicate: NSPredicate?
         
 //        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
-        predicate = NSPredicate(format: "location == %@", pin)
-        fetchRequest.predicate = predicate
+        //predicate = NSPredicate(format: "self.objectID == %@", objectID!)
+        //fetchRequest.predicate = predicate
         
         
         //let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
         let sortDescriptor = NSSortDescriptor()
         fetchRequest.sortDescriptors = [sortDescriptor]
+        print("passed object id: \(objectID!)")
         print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
