@@ -14,7 +14,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var dataController: DataController!
     
-    //the location whose photos are being displayed
+    //the location passed from Travel Location Map VC, and whose photos will be displayed
     var pin: Pin!
     
     var photo: Photo?
@@ -24,7 +24,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var location: NSManagedObject!
     
-    var fetchedResultsController: NSFetchedResultsController<Pin>!
+    var fetchedResultsController: NSFetchedResultsController<Photo>!
     
     var currentPinLatitude: Double!
     var currentPinLongitude: Double!
@@ -40,7 +40,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         mapView.delegate = self
         collectionView.dataSource = self
         configMap()
-        //setupFetchedResultsController()
         // Do any additional setup after loading the view.
         print("view Did Load")
     }
@@ -49,9 +48,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         super.viewWillAppear(animated)
         print("view WIll Appear")
         //location = getObjectFromPassed(id: objectID)
+        print("the pin that was passed: \(pin!)")
+        print("passed pin photos: \(String(describing: pin.photos?.count))")
         
-        getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
-        setupFetchedResultsController()
+        
+        //move getPhotos to Fetch?  If fetchedObjects <= 0, get photos, else loadPhotos (need to create that func)
+        //getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
+        
+        loadPhotosOrFetchPhotos()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -78,20 +82,32 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         return location
     }
     
+    // func to determine if photos are already downloaded, or should download (info should feed into collection view)
+    // if pin.photos.count <= 0, get photos, else setupFetchResultsController
+    func loadPhotosOrFetchPhotos() {
+        setupFetchedResultsController()
+        if let photoCount = pin.photos?.count {
+            if photoCount >= 0 {
+                getPhotos(lat: pin.latitude, lon: pin.longitude)
+            } else {
+                setupFetchedResultsController()
+            }
+        }
+    }
+    
     func setupFetchedResultsController() {
-        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
-        //let id = objectID
-        //let predicate: NSPredicate?
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        let predicate: NSPredicate?
         
 //        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
-        //predicate = NSPredicate(format: "self.objectID == %@", objectID!)
-        //fetchRequest.predicate = predicate
+        
+        predicate = NSPredicate(format: "location == %@", pin)
+        fetchRequest.predicate = predicate
         
         
-        //let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
-        let sortDescriptor = NSSortDescriptor()
+        let sortDescriptor = NSSortDescriptor(key: "image", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
-        print("passed object id: \(objectID!)")
+        
         print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
@@ -104,7 +120,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         // testing Fetch
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            print("fetched Objects: \(fetchedObjects)")
+            print("fetched Objects count: \(fetchedObjects.count)")
         }
     }
     
@@ -186,20 +202,29 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("downloadedPhotos Count: \(downloadedPhotos.count)")
-        return downloadedPhotos.count
+        //print("downloadedPhotos Count: \(downloadedPhotos.count)")
+        //return downloadedPhotos.count
         //fetchedResultsController.fetchedObjects
-        //print("fetchedObjects: \(fetchedResultsController.fetchedObjects?.count ?? 3)")
-        //return fetchedResultsController.fetchedObjects?.count ?? 3
-        //return 1
+        if fetchedResultsController.fetchedObjects?.count == nil {
+            return downloadedPhotos.count
+        } else {
+            return fetchedResultsController.fetchedObjects!.count
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
-        let photo = self.downloadedPhotos[indexPath.item]
         
-        cell.locationPhoto.image = UIImage(data: photo)
+        if let fetchedPhoto = fetchedResultsController.fetchedObjects?[indexPath.item], let photo = fetchedPhoto.image {
+            cell.locationPhoto.image = UIImage(data: photo)
+            print("photo taken from Fetched Objects")
+        } else {
+            let photo = self.downloadedPhotos[indexPath.item]
+            cell.locationPhoto.image = UIImage(data: photo)
+            print("photo taken from Downloaded Photos")
+        }
+        
         return cell
     }
 

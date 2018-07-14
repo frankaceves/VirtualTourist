@@ -154,6 +154,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
                 if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
                     print("numbers match! PinID: \(pin.objectID)")
                     self.objectID = pin.objectID
+                    self.pin = pin
                     return true
                 } else {
                     print("numbers don't match")
@@ -179,6 +180,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             vc?.currentCoordinate = coordinate
             vc?.dataController = dataController
             vc?.objectID = self.objectID
+            vc?.pin = self.pin
         }
     }
 }
