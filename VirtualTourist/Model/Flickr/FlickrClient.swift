@@ -50,10 +50,10 @@ class FlickrClient: NSObject {
         components.host = FlickrClient.Constants.Flickr.APIHost
         components.path = FlickrClient.Constants.Flickr.APIPath
         
-        for (key, value) in parameters {
-            let queryItem = URLQueryItem(name: key, value: "\(value)")
-            //components.queryItems?.append(queryItem)
-        }
+//        for (key, value) in parameters {
+//            let queryItem = URLQueryItem(name: key, value: "\(value)")
+//            //components.queryItems?.append(queryItem)
+//        }
         
         return components.url!
     }
