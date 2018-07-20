@@ -55,15 +55,12 @@
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="Rbk-wC-mEM">
                         <barButtonItem key="backBarButtonItem" title="Back" id="bU8-PK-a6b"/>
-                        <barButtonItem key="rightBarButtonItem" title="EDIT" id="B7A-9L-Is2">
-                            <connections>
-                                <segue destination="uY8-CS-xvs" kind="show" identifier="showPhotoAlbum" id="zv0-a8-m5T"/>
-                            </connections>
-                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="EDIT" id="B7A-9L-Is2"/>
                     </navigationItem>
                     <connections>
                         <outlet property="gestureRecognizer" destination="Yrx-Xf-8q0" id="jq2-Y8-UcL"/>
                         <outlet property="mapView" destination="PbK-Ow-BEN" id="I0g-6V-vCh"/>
+                        <segue destination="uY8-CS-xvs" kind="show" identifier="showPhotoAlbum" id="5cw-Qs-T8S"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="O1Y-kS-hch" userLabel="First Responder" sceneMemberID="firstResponder"/>
