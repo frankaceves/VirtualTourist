@@ -33,12 +33,17 @@ class FlickrClient: NSObject {
         let secret: String
     }
     
+    
     var photoResults: [Data] = []
     
     // MARK: HELPER FUNCTIONS
     
     // create a URL from parameters
     // SOURCE: used in The Movie Manager udacity sub-project (Section 5: Network Requests)
+    func clearPhotoResults() {
+        photoResults = []
+    }
+    
     func flickrURLFromParameters(_ parameters: [String:AnyObject]) -> URL {
         var components = URLComponents()
         components.scheme = FlickrClient.Constants.Flickr.APIScheme
@@ -54,7 +59,7 @@ class FlickrClient: NSObject {
     }
     
     func downloadPhotosForLocation(lat: Double, lon: Double, _ completionHandlerfForPhotoDownload: @escaping (_ results: [Data]?, _ error: String?) -> Void) {
-        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=5&format=json&nojsoncallback=1"
+        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
         let url = URL(string: urlString)
         
         let session = URLSession.shared
@@ -83,6 +88,7 @@ class FlickrClient: NSObject {
                     //make url from info provided
                     self.makeImageFrom(photo: photo)
                 }
+                
                 completionHandlerfForPhotoDownload(self.photoResults, nil)
                 
             } else {
@@ -105,7 +111,6 @@ class FlickrClient: NSObject {
         let urlString = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
         let imageUrl = URL(string: urlString)!
         //print("imageURL: \(imageUrl)")
-        
         
         if let imageData = try? Data(contentsOf: imageUrl) {
 //            if let image = UIImage(data: imageData) {

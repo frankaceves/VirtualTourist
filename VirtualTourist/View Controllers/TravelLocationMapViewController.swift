@@ -162,7 +162,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             for pin in savedPins {
                 
                 if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
-                    self.objectID = pin.objectID
+                    //self.objectID = pin.objectID
                     self.pin = pin
                     return true
                 } else {

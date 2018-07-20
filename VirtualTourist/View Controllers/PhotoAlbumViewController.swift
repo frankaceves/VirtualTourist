@@ -70,6 +70,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         fetchedResultsController = nil
         downloadedPhotos = []
         print("dl photo after disappear: \(downloadedPhotos)")
+        FlickrClient.sharedInstance().clearPhotoResults()
     }
     
     // func to determine if photos are already downloaded, or should download (info should feed into collection view)
