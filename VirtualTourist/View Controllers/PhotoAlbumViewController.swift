@@ -33,7 +33,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     @IBOutlet weak var mapView: MKMapView!
     
     @IBOutlet var collectionView: UICollectionView!
-    var downloadedPhotos = [Data]()
+    var downloadedPhotos: [Data] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,59 +47,82 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         print("view WIll Appear")
+        print("dl Photo array: \(downloadedPhotos)")
         //location = getObjectFromPassed(id: objectID)
         print("the pin that was passed: \(pin!)")
         print("passed pin photos: \(String(describing: pin.photos?.count))")
         
-        
         //move getPhotos to Fetch?  If fetchedObjects <= 0, get photos, else loadPhotos (need to create that func)
         //getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
         
-        loadPhotosOrFetchPhotos()
+        downloadPhotosOrFetchPhotos()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        print("view will disappear")
-        savePhotos()
+        print("view WILL disappear.")
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
+        print("view DID disappear")
+        savePhotos()
         fetchedResultsController = nil
-    }
-    
-    func getObjectFromPassed(id: NSManagedObjectID) -> NSManagedObject {
-        var location = NSManagedObject()
-        do {
-            location = try dataController.viewContext.existingObject(with: objectID)
-            return location
-        } catch {
-            print("could not get object: \(error.localizedDescription)")
-        }
-        print("managedObject: \(location)")
-        print("managedObject photos: \(location.objectIDs(forRelationshipNamed: "photos"))")
-        return location
+        downloadedPhotos = []
+        print("dl photo after disappear: \(downloadedPhotos)")
     }
     
     // func to determine if photos are already downloaded, or should download (info should feed into collection view)
     // if pin.photos.count <= 0, get photos, else setupFetchResultsController
-    func loadPhotosOrFetchPhotos() {
-        setupFetchedResultsController()
-        if let photoCount = pin.photos?.count {
-            if photoCount >= 0 {
-                getPhotos(lat: pin.latitude, lon: pin.longitude)
+    fileprivate func downloadPhotos() {
+        // DOWNLOAD PHOTOS
+        getPhotos(lat: pin.latitude, lon: pin.longitude, completionHandlerfForGetPhotos: { (success, error) in
+            if success == true {
+                
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
             } else {
-                setupFetchedResultsController()
+                print("error in getPhotos via downloadPhotos method: \(error!)")
+            }
+        })
+    }
+    
+    func downloadPhotosOrFetchPhotos() {
+        
+        if let photoCount = pin.photos?.count {
+            if photoCount <= 0 {
+                downloadPhotos()
+            } else {
+                //FETCH PHOTOS
+                //possibly send photo array to collection view?
+                //reload data?
+                print("load fetched photos")
+                fetchPhotos()
+            }
+        } else {
+            print("there are no photos to load.")
+        }
+    }
+    
+    func fetchPhotos() {
+        setupFetchedResultsController()
+        
+        // testing Fetch
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            print("fetched Objects count: \(fetchedObjects.count)")
+            for photo in fetchedObjects {
+                if let imageData = photo.image {
+                    downloadedPhotos.append(imageData)
+                }
             }
         }
+        collectionView.reloadData()
     }
     
     func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
         let predicate: NSPredicate?
-        
-//        predicate = NSPredicate(format: "latitude BEGINSWITH %@ AND longitude BEGINSWITH %@", newLatitude as CVarArg, newLongitude as CVarArg)
         
         predicate = NSPredicate(format: "location == %@", pin)
         fetchRequest.predicate = predicate
@@ -118,10 +141,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             fatalError("The fetch could not be performed: \(error.localizedDescription)")
         }
         
-        // testing Fetch
-        if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            print("fetched Objects count: \(fetchedObjects.count)")
-        }
+        
     }
     
     func configMap() {
@@ -160,30 +180,31 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     // MARK: - PHOTO DOWNLOAD FUNCTIONS
-    func getPhotos(lat: Double, lon: Double) {
+    func getPhotos(lat: Double, lon: Double, completionHandlerfForGetPhotos: @escaping (_ success: Bool, _ error: String?) -> Void) {
         FlickrClient.sharedInstance().downloadPhotosForLocation(lat: lat, lon: lon) { (images, error) in
             if error != nil {
-                print("error creating images: \(error!)")
+                completionHandlerfForGetPhotos(false, "error downloading images: \(error!)")
             }
             
             guard let images = images else {
-                print("no images returned")
+                completionHandlerfForGetPhotos(false, "no images returned")
                 return
             }
             
             for image in images {
                 let photo = Photo(context: self.dataController.viewContext)
+                
+                //clear attributes?
                 photo.image = image
                 photo.location = self.pin
-                //photo.location?.latitude = self.pin.latitude
-                //photo.location?.longitude = self.pin.longitude
                 print("photoInfo: \(photo)")
+                
                 self.downloadedPhotos.append(image)
+                // ***can't save core data here***
+                
             }
-
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
-            }
+            
+            completionHandlerfForGetPhotos(true, nil)
         }
         
     }
@@ -192,6 +213,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     func savePhotos() {
         if dataController.viewContext.hasChanges {
+            print("there were changes.  Attempting to save.")
             do {
                 try dataController.viewContext.save()
             } catch {
@@ -202,28 +224,18 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        //print("downloadedPhotos Count: \(downloadedPhotos.count)")
-        //return downloadedPhotos.count
-        //fetchedResultsController.fetchedObjects
-        if fetchedResultsController.fetchedObjects?.count == nil {
-            return downloadedPhotos.count
-        } else {
-            return fetchedResultsController.fetchedObjects!.count
-        }
+        print("***Collection View: Number of items in section***")
+        return downloadedPhotos.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
+        //print("***Collection View: Cell For Row at Index Path***")
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
         
-        if let fetchedPhoto = fetchedResultsController.fetchedObjects?[indexPath.item], let photo = fetchedPhoto.image {
-            cell.locationPhoto.image = UIImage(data: photo)
-            print("photo taken from Fetched Objects")
-        } else {
-            let photo = self.downloadedPhotos[indexPath.item]
-            cell.locationPhoto.image = UIImage(data: photo)
-            print("photo taken from Downloaded Photos")
-        }
+        
+        let fetchedPhoto = downloadedPhotos[indexPath.item]
+        
+        cell.locationPhoto.image = UIImage(data: fetchedPhoto)
         
         return cell
     }

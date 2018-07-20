@@ -27,11 +27,18 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         // Do any additional setup after loading the view, typically from a nib.
         mapView.delegate = self
         setupFetchedResultsController()
+        
+        if let pin = pin {
+            print("Pin as of loading: \(pin)")
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
+        if let pin = pin {
+            print("Pin as of loading: \(pin)")
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -40,9 +47,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     fileprivate func loadPins() {
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            print("total objects with ID: \(String(describing: fetchedObjects.count))")
-            //print("fetched objects: \(fetchedObjects)")
-            
+            //print("total objects with ID: \(String(describing: fetchedObjects.count))")
             
             var annotations = [MKPointAnnotation]()
             
@@ -93,7 +98,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         if gestureRecognizer.state == .began {
             let point = gestureRecognizer.location(in: self.mapView)
             let coordinate = self.mapView.convert(point, toCoordinateFrom: self.mapView)
-            print("coordinate: \(coordinate)")
+            //print("coordinate: \(coordinate)")
             
             //add map annotation
             let annotation = MKPointAnnotation()
@@ -136,7 +141,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        print("annotation coordinate: \(view.annotation!.coordinate)")
+        //print("annotation coordinate: \(view.annotation!.coordinate)")
         if checkForMatching(coordinate: view.annotation!.coordinate) {
             self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         } else {
@@ -147,12 +152,16 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     //check selected annotation's coordinate, and compare to fetched objects
     func checkForMatching(coordinate: CLLocationCoordinate2D) -> Bool {
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed to match pin location data: \(error.localizedDescription)")
+        }
+        
         if let savedPins = fetchedResultsController.fetchedObjects {
             for pin in savedPins {
-                print("pin lat: \(pin.latitude)\npin lon: \(pin.longitude)")
-                print("coordinate lat: \(coordinate.latitude)\ncoordinate lon: \(coordinate.longitude)")
+                
                 if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
-                    print("numbers match! PinID: \(pin.objectID)")
                     self.objectID = pin.objectID
                     self.pin = pin
                     return true
@@ -166,8 +175,8 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        print("region changed")
-        print("mapView.region: \(mapView.region)")
+        //print("region changed")
+        //print("mapView.region: \(mapView.region)")
     }
     
     // MARK: - NAVIGATION
