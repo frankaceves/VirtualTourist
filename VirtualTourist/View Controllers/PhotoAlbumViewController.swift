@@ -52,7 +52,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //location = getObjectFromPassed(id: objectID)
         print("the pin that was passed: \(pin!)")
         print("passed pin photos: \(String(describing: pin.photos?.count))")
-        
+        setupFetchedResultsController()
         //move getPhotos to Fetch?  If fetchedObjects <= 0, get photos, else loadPhotos (need to create that func)
         //getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
         
@@ -93,10 +93,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         if let photoCount = pin.photos?.count {
             if photoCount <= 0 {
                 downloadPhotos()
+                fetchPhotos()
             } else {
                 //FETCH PHOTOS
                 print("load fetched photos")
                 fetchPhotos()
+                collectionView.reloadData()
             }
         } else {
             print("there are no photos to load.")
@@ -115,7 +117,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 }
             }
         }
-        collectionView.reloadData()
     }
     
     func setupFetchedResultsController() {
@@ -132,14 +133,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
-        
-        do {
-            try fetchedResultsController.performFetch()
-        } catch {
-            fatalError("The fetch could not be performed: \(error.localizedDescription)")
-        }
-        
-        
     }
     
     func configMap() {
@@ -217,6 +210,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             } catch {
                 print("an error occurred while saving: \(error.localizedDescription)")
             }
+        } else {
+            print("no changes were made.  Not saving.")
         }
     }
     
