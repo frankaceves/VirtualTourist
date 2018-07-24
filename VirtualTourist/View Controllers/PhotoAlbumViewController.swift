@@ -52,7 +52,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //print("the pin that was passed: \(pin!)")
         //print("passed pin photos: \(String(describing: pin.photos?.count))")
         setupFetchedResultsController()
-        
         downloadPhotosOrFetchPhotos()
     }
     
@@ -86,7 +85,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     func downloadPhotosOrFetchPhotos() {
-        
         if let photoCount = pin.photos?.count {
             if photoCount <= 0 {
                 downloadPhotos()
@@ -135,7 +133,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         predicate = NSPredicate(format: "location == %@", pin)
         fetchRequest.predicate = predicate
-        
         
         let sortDescriptor = NSSortDescriptor(key: "image", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
@@ -194,15 +191,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             
             for image in images {
                 let photo = Photo(context: self.dataController.viewContext)
-                
                 photo.image = image
                 photo.location = self.pin
                 //print("photoInfo: \(photo)")
-                
                 self.downloadedPhotos.append(image)
                 
             }
-            
             completionHandlerfForGetPhotos(true, nil)
         }
         
@@ -233,7 +227,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //print("***Collection View: Cell For Row at Index Path***")
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
         
-        
         let fetchedPhoto = downloadedPhotos[indexPath.item]
         
         cell.locationPhoto.image = UIImage(data: fetchedPhoto)
@@ -250,9 +243,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         downloadedPhotos.remove(at: indexPath.item)
         collectionView.deleteItems(at: [indexPath])
-        
-        
-        
         
         dataController.viewContext.delete(photoToDelete)
         
