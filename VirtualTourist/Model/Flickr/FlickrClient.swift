@@ -65,7 +65,7 @@ class FlickrClient: NSObject {
         let session = URLSession.shared
         
         let request = URLRequest(url: url!)
-        print("request: \(request)")
+        //print("request: \(request)")
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
@@ -115,12 +115,6 @@ class FlickrClient: NSObject {
         //print("imageURL: \(imageUrl)")
         
         if let imageData = try? Data(contentsOf: imageUrl) {
-//            if let image = UIImage(data: imageData) {
-//                //self.photoResults.append(image)
-//                photoResults.append(image)
-//                //print("Photo array count: \(photoResults.count)")
-//            }
-            
             //collect data only for CoreData
             photoResults.append(imageData)
         }
