@@ -49,12 +49,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         super.viewWillAppear(animated)
         print("view WIll Appear")
         print("dl Photo array: \(downloadedPhotos)")
-        //location = getObjectFromPassed(id: objectID)
         print("the pin that was passed: \(pin!)")
         print("passed pin photos: \(String(describing: pin.photos?.count))")
         setupFetchedResultsController()
-        //move getPhotos to Fetch?  If fetchedObjects <= 0, get photos, else loadPhotos (need to create that func)
-        //getPhotos(lat: currentCoordinate.latitude, lon: currentCoordinate.longitude)
         
         downloadPhotosOrFetchPhotos()
     }
@@ -75,7 +72,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     fileprivate func downloadPhotos() {
-        // DOWNLOAD PHOTOS
         getPhotos(lat: pin.latitude, lon: pin.longitude, completionHandlerfForGetPhotos: { (success, error) in
             if success == true {
                 self.savePhotos()
@@ -199,13 +195,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             for image in images {
                 let photo = Photo(context: self.dataController.viewContext)
                 
-                //clear attributes?
                 photo.image = image
                 photo.location = self.pin
                 print("photoInfo: \(photo)")
                 
                 self.downloadedPhotos.append(image)
-                // ***can't save core data here***
                 
             }
             
