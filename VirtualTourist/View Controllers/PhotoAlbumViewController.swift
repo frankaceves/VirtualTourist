@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 import CoreData
 
-class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate {
+class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MKMapViewDelegate, NSFetchedResultsControllerDelegate, UICollectionViewDelegate {
     
     var dataController: DataController!
     
@@ -39,6 +39,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         super.viewDidLoad()
         mapView.delegate = self
         collectionView.dataSource = self
+        collectionView.delegate = self
         configMap()
         // Do any additional setup after loading the view.
         print("view Did Load")
@@ -252,3 +253,4 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     */
 
 }
+
