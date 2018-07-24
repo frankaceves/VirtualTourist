@@ -118,7 +118,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     func fetchPhotos() {
-        setupFetchedResultsController()
+        resetDownloadedPhotos()
+        performFetch()
         
         // testing Fetch
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
