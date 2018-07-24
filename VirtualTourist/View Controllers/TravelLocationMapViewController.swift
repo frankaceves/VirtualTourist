@@ -28,17 +28,17 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         mapView.delegate = self
         setupFetchedResultsController()
         
-        if let pin = pin {
-            print("Pin as of loading: \(pin)")
-        }
+//        if let pin = pin {
+//            print("Pin as of loading: \(pin)")
+//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
-        if let pin = pin {
-            print("Pin as of loading: \(pin)")
-        }
+//        if let pin = pin {
+//            print("Pin as of loading: \(pin)")
+//        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
