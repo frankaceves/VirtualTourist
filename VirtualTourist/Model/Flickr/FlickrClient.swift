@@ -65,6 +65,7 @@ class FlickrClient: NSObject {
         let session = URLSession.shared
         
         let request = URLRequest(url: url!)
+        print("request: \(request)")
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
@@ -84,6 +85,7 @@ class FlickrClient: NSObject {
             
             if let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) {
                 //print("decoded")
+                
                 for photo in photosInfo.photos.photo {
                     //make url from info provided
                     self.makeImageFrom(photo: photo)
