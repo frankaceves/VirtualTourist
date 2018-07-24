@@ -74,8 +74,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         FlickrClient.sharedInstance().clearPhotoResults()
     }
     
-    // func to determine if photos are already downloaded, or should download (info should feed into collection view)
-    // if pin.photos.count <= 0, get photos, else setupFetchResultsController
     fileprivate func downloadPhotos() {
         // DOWNLOAD PHOTOS
         getPhotos(lat: pin.latitude, lon: pin.longitude, completionHandlerfForGetPhotos: { (success, error) in
@@ -97,8 +95,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 downloadPhotos()
             } else {
                 //FETCH PHOTOS
-                //possibly send photo array to collection view?
-                //reload data?
                 print("load fetched photos")
                 fetchPhotos()
             }
@@ -251,6 +247,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         // Pass the selected object to the new view controller.
     }
     */
-
+    
 }
 
