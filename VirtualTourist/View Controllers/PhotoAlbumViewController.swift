@@ -78,7 +78,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         // DOWNLOAD PHOTOS
         getPhotos(lat: pin.latitude, lon: pin.longitude, completionHandlerfForGetPhotos: { (success, error) in
             if success == true {
-                
+                self.savePhotos()
+                self.fetchPhotos()
                 DispatchQueue.main.async {
                     self.collectionView.reloadData()
                 }
