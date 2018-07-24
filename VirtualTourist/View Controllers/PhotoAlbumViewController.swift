@@ -42,15 +42,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         collectionView.delegate = self
         configMap()
         // Do any additional setup after loading the view.
-        print("view Did Load")
+        //print("view Did Load")
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("view WIll Appear")
-        print("dl Photo array: \(downloadedPhotos)")
-        print("the pin that was passed: \(pin!)")
-        print("passed pin photos: \(String(describing: pin.photos?.count))")
+        //print("view WIll Appear")
+        //print("dl Photo array: \(downloadedPhotos)")
+        //print("the pin that was passed: \(pin!)")
+        //print("passed pin photos: \(String(describing: pin.photos?.count))")
         setupFetchedResultsController()
         
         downloadPhotosOrFetchPhotos()
@@ -58,16 +58,16 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        print("view WILL disappear.")
+        //print("view WILL disappear.")
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        print("view DID disappear")
+        //print("view DID disappear")
         savePhotos()
         fetchedResultsController = nil
         downloadedPhotos = []
-        print("dl photo after disappear: \(downloadedPhotos)")
+        //print("dl photo after disappear: \(downloadedPhotos)")
         FlickrClient.sharedInstance().clearPhotoResults()
     }
     
@@ -120,7 +120,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         // testing Fetch
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            print("fetched Objects count: \(fetchedObjects.count)")
+            //print("fetched Objects count: \(fetchedObjects.count)")
             for photo in fetchedObjects {
                 if let imageData = photo.image {
                     downloadedPhotos.append(imageData)
@@ -140,7 +140,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         let sortDescriptor = NSSortDescriptor(key: "image", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        print("fetchRequest: \(fetchRequest)")
+        //print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
     }
@@ -197,7 +197,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 
                 photo.image = image
                 photo.location = self.pin
-                print("photoInfo: \(photo)")
+                //print("photoInfo: \(photo)")
                 
                 self.downloadedPhotos.append(image)
                 
@@ -225,7 +225,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("***Collection View: Number of items in section***")
+        //print("***Collection View: Number of items in section***")
         return downloadedPhotos.count
     }
 
@@ -244,9 +244,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        print("DL Photo info: \(downloadedPhotos[indexPath.item])")
+        //print("DL Photo info: \(downloadedPhotos[indexPath.item])")
         let photoToDelete = fetchedResultsController.object(at: indexPath)
-        print("CD Photo info: \(photoToDelete.image!)")
+        //print("CD Photo info: \(photoToDelete.image!)")
         
         downloadedPhotos.remove(at: indexPath.item)
         collectionView.deleteItems(at: [indexPath])
