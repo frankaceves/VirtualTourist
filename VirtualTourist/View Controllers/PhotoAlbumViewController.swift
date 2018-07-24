@@ -105,6 +105,18 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         }
     }
     
+    private func resetDownloadedPhotos() {
+        downloadedPhotos = []
+    }
+    
+    fileprivate func performFetch() {
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+    }
+    
     func fetchPhotos() {
         setupFetchedResultsController()
         
