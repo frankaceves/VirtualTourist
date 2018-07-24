@@ -237,6 +237,25 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         return cell
     }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        print("DL Photo info: \(downloadedPhotos[indexPath.item])")
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+        print("CD Photo info: \(photoToDelete.image!)")
+        
+        downloadedPhotos.remove(at: indexPath.item)
+        collectionView.deleteItems(at: [indexPath])
+        
+        
+        
+        
+        dataController.viewContext.delete(photoToDelete)
+        
+        savePhotos()
+        performFetch()
+    }
 
     /*
     // MARK: - Navigation
