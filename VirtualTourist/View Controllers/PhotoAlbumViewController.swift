@@ -88,7 +88,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         if let photoCount = pin.photos?.count {
             if photoCount <= 0 {
                 downloadPhotos()
-                fetchPhotos()
+                //fetchPhotos()
             } else {
                 //FETCH PHOTOS
                 print("load fetched photos")
