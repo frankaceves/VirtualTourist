@@ -126,6 +126,33 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             }
         }
     }
+    @IBAction func newCollectionButtonPressed(_ sender: UIBarButtonItem) {
+        //clear photos from local array
+        //resetDownloadedPhotos()
+        print("DL photo count: \(downloadedPhotos.count)")
+        //clear photos from coreData
+        //fetch request is already established
+        //NSBatchDeleteRequest
+        if let fetchedObjects = fetchedResultsController.fetchedObjects {
+            print("confirming fetched count: \(fetchedObjects.count)")
+            for photo in fetchedObjects {
+                print("photo info: \(photo.image!.description)")
+                dataController.viewContext.delete(photo)
+            }
+            
+        }
+        
+        fetchPhotos()
+        print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
+        savePhotos()
+        //
+        FlickrClient.sharedInstance().clearPhotoResults()
+        print("Flickr photo results count: \(FlickrClient.sharedInstance().photoResults.count)")
+        //download new set of photos
+        downloadPhotos()
+        //perform fetch to be able to delete photos
+        //fetchPhotos()
+    }
     
     func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
