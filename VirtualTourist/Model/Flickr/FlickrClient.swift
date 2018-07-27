@@ -19,6 +19,7 @@ class FlickrClient: NSObject {
     
     struct PhotoInfo: Decodable {
         let photo: [Photo]
+        let page: Int
     }
     
     struct Photo: Decodable {
