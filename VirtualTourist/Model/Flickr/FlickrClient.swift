@@ -105,6 +105,59 @@ class FlickrClient: NSObject {
         
     }
     
+    func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ results: [Data]?, _ error: String?) -> Void) {
+        //print("***search for random photos called")
+        //take urlString parameter from previous method
+        //append page number to it
+        let urlStringWithPageNumber = urlString.appending("&page=\(pageNumber)")
+        //print("new urlString: \(urlStringWithPageNumber)")
+        
+        let url = URL(string: urlStringWithPageNumber)
+        
+        let session = URLSession.shared
+        
+        let request = URLRequest(url: url!)
+        //print("request: \(request)")
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            guard (error == nil) else{
+                print("error downloading photos: \(error!)")
+                return
+            }
+            
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
+                print("request returned status code other than 2XX")
+                return
+            }
+            
+            guard let data = data else {
+                print("could not download data")
+                return
+            }
+            
+            guard let randomPhotosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
+                print("error in decoding process")
+                return
+            }
+            
+            for photo in randomPhotosInfo.photos.photo {
+                self.makeImageFrom(photo: photo)
+            }
+            
+            print("photoResults count = \(self.photoResults.count)")
+            print("photoResults = \(self.photoResults)")
+            completionHandlerfForRandomPhotoSearch(self.photoResults, nil)
+            
+        }
+        task.resume()
+        //TODO: MOVE makeImageFrom func to secondary function
+        //TODO: SECONDARY FUNCTION should pass photo info (iteration)
+        //TODO: iterate through second set of results - make image from...
+            
+            //completion hander should be executed in second function with second network request.
+            //completionHandlerfForPhotoDownload(self.photoResults, nil)
+        
+    }
     
     func makeImageFrom(photo: Photo){
         let farm = photo.farm
