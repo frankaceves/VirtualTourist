@@ -85,21 +85,27 @@ class FlickrClient: NSObject {
                 return
             }
             
-            if let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) {
-                //print("decoded")
-                
-                for photo in photosInfo.photos.photo {
-                    //make url from info provided
-                    self.makeImageFrom(photo: photo)
-                }
-                
-                completionHandlerfForPhotoDownload(self.photoResults, nil)
-                
-            } else {
-                //print("not decoded")
-                completionHandlerfForPhotoDownload(nil, "could not decode photo Data")
+            guard let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
+                print("error in decoding process")
+                return
             }
             
+            // PULL PAGES INFO HERE
+            let totalPages = photosInfo.photos.pages
+            
+            // CREATE RANDOM PAGE
+            let pageLimit = min(totalPages, 100)
+            let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            print("random page number = \(randomPageNumber)")
+            
+            //TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
+            self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (results, error) in
+                
+                if (results != nil) {
+                    print("completion for random photos")
+                    completionHandlerfForPhotoDownload(results, nil)
+                }
+            })
         }
         task.resume()
         
