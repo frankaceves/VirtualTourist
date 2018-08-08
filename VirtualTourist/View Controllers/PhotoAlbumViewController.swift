@@ -91,7 +91,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 //fetchPhotos()
             } else {
                 //FETCH PHOTOS
-                print("load fetched photos")
+                //print("load fetched photos")
                 fetchPhotos()
                 collectionView.reloadData()
             }
@@ -231,14 +231,14 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     func savePhotos() {
         if dataController.viewContext.hasChanges {
-            print("there were changes.  Attempting to save.")
+            //print("there were changes.  Attempting to save.")
             do {
                 try dataController.viewContext.save()
             } catch {
                 print("an error occurred while saving: \(error.localizedDescription)")
             }
         } else {
-            print("no changes were made.  Not saving.")
+            //print("no changes were made.  Not saving.")
         }
     }
     
