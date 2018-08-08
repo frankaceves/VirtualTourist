@@ -96,13 +96,13 @@ class FlickrClient: NSObject {
             // CREATE RANDOM PAGE
             let pageLimit = min(totalPages, 100)
             let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
-            print("random page number = \(randomPageNumber)")
+            //print("random page number = \(randomPageNumber)")
             
             //TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
             self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (results, error) in
                 
                 if (results != nil) {
-                    print("completion for random photos")
+                    //print("completion for random photos")
                     completionHandlerfForPhotoDownload(results, nil)
                 }
             })
@@ -150,8 +150,8 @@ class FlickrClient: NSObject {
                 self.makeImageFrom(photo: photo)
             }
             
-            print("photoResults count = \(self.photoResults.count)")
-            print("photoResults = \(self.photoResults)")
+            //print("photoResults count = \(self.photoResults.count)")
+            //print("photoResults = \(self.photoResults)")
             completionHandlerfForRandomPhotoSearch(self.photoResults, nil)
             
         }
