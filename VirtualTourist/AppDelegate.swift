@@ -27,9 +27,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         //checkIfFirstLaunch()
         
-        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let path = urls[urls.count - 1] as URL
-        print("core data sql path: \(path)")
+//        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+//        let path = urls[urls.count - 1] as URL
+//        print("core data sql path: \(path)")
         return true
     }
     
