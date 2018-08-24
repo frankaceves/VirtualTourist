@@ -37,6 +37,7 @@ class FlickrClient: NSObject {
     
     
     var photoResults: [Data] = []
+    var searchResultsCount = 0
     
     // MARK: HELPER FUNCTIONS
     
@@ -59,8 +60,55 @@ class FlickrClient: NSObject {
         
         return components.url!
     }
-    
-    func downloadPhotosForLocation(lat: Double, lon: Double, _ completionHandlerfForPhotoDownload: @escaping (_ results: [Data]?, _ error: String?) -> Void) {
+    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ photoInfo: Photos?) -> Void) {
+        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
+        let url = URL(string: urlString)
+        
+        let session = URLSession.shared
+        
+        let request = URLRequest(url: url!)
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            guard (error == nil) else{
+                print("error downloading photos: \(error!)")
+                return
+            }
+            
+            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
+                print("request returned status code other than 2XX")
+                return
+            }
+            
+            guard let data = data else {
+                print("could not download data")
+                return
+            }
+            
+            guard let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
+                print("error in decoding process")
+                return
+            }
+            
+            // HOW MANY SEARCH RESULTS DID YOU GET?
+            self.searchResultsCount = photosInfo.photos.photo.count
+            print("search results count: \(self.searchResultsCount)")
+            completionHandlerForDownload(true, photosInfo)
+            
+            // PULL PAGES INFO HERE
+            //let totalPages = photosInfo.photos.pages
+            
+            // CREATE RANDOM PAGE
+            //let pageLimit = min(totalPages, 100)
+            //let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            //print("random page number = \(randomPageNumber)")
+            
+            // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
+            
+        }
+        task.resume()
+    }
+        
+    func downloadPhotosForLocation(lat: Double, lon: Double) /*, _ completionHandlerfForPhotoDownload: @escaping (_ results: [Data]?, _ error: String?) -> Void */ {
         let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
         let url = URL(string: urlString)
         
@@ -90,22 +138,20 @@ class FlickrClient: NSObject {
                 return
             }
             
+            // HOW MANY SEARCH RESULTS DID YOU GET?
+            self.searchResultsCount = photosInfo.photos.photo.count
+            print("search results count: \(self.searchResultsCount)")
+            
             // PULL PAGES INFO HERE
             let totalPages = photosInfo.photos.pages
             
             // CREATE RANDOM PAGE
-            let pageLimit = min(totalPages, 100)
-            let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            //let pageLimit = min(totalPages, 100)
+            //let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
             //print("random page number = \(randomPageNumber)")
             
-            //TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
-            self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (results, error) in
-                
-                if (results != nil) {
-                    //print("completion for random photos")
-                    completionHandlerfForPhotoDownload(results, nil)
-                }
-            })
+            // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
+            
         }
         task.resume()
         
@@ -179,6 +225,26 @@ class FlickrClient: NSObject {
             //collect data only for CoreData
             photoResults.append(imageData)
         }
+    }
+    
+    func makeImageDataFrom1(photo: Photo) -> Data?{
+        let farm = photo.farm
+        let server = photo.server
+        let id = photo.id
+        let secret = photo.secret
+        
+        let urlString = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
+        let imageUrl = URL(string: urlString)!
+        //print("imageURL: \(imageUrl)")
+        
+//        if let imageData = try? Data(contentsOf: imageUrl) {
+//            //collect data only for CoreData
+//            //photoResults.append(imageData)
+//            return imageData
+//        } else {
+//            return nil
+//        }
+        return try? Data(contentsOf: imageUrl)
     }
     
     // MARK: SHARED INSTANCE
