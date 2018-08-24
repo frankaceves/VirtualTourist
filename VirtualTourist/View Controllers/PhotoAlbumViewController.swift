@@ -34,6 +34,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     
     var downloadedPhotos: [Data] = []
+    var photoInfo: [FlickrClient.Photo]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,6 +66,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //print("view DID disappear")
         savePhotos()
         fetchedResultsController = nil
+        photoInfo = nil
         downloadedPhotos = []
         //print("dl photo after disappear: \(downloadedPhotos)")
         FlickrClient.sharedInstance().clearPhotoResults()
@@ -85,12 +87,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             }
             
             print("photosInfo: \(result.photos.photo)")
-            for item in result.photos.photo {
-                if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(photo: item) {
-                    
-                }
-                
-            }
+            self.photoInfo = result.photos.photo
             
             
             DispatchQueue.main.async {
@@ -248,7 +245,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
-        return fetchedResultsController.sections?[0].numberOfObjects ?? 3
+        
+        return fetchedResultsController.sections?[section].numberOfObjects ?? 21
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -258,6 +256,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
+        cell.locationPhoto.image = #imageLiteral(resourceName: "Placeholder - 120x120")
+        
         let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         activityIndicator.frame = cell.bounds
         cell.backgroundColor = UIColor.darkGray
@@ -273,13 +273,41 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 activityIndicator.stopAnimating()
             }
         } else {
-            cell.locationPhoto.image = #imageLiteral(resourceName: "Placeholder - 120x120")
+            if let photoInfo = photoInfo {
+                //print("Photo Info: \(photoInfo)")
+//                if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(photo: photoInfo[indexPath.item]) {
+//                    cell.locationPhoto.image = UIImage(data: photoData)
+//                    activityIndicator.stopAnimating()
+//                    cell.locationPhoto.alpha = 1.0
+//                }
+                DispatchQueue.global().async {
+                    self.downloadSinglePhoto(photo: photoInfo[indexPath.item], { (imageDataForCell) in
+                        guard let image = imageDataForCell else {
+                            print("single photo image error")
+                            return
+                        }
+                        
+                        if let imageForCell = UIImage(data: image) {
+                            DispatchQueue.main.async {
+                                cell.locationPhoto.image = imageForCell
+                                cell.locationPhoto.alpha = 1.0
+                                activityIndicator.stopAnimating()
+                            }
+                        }
+                    })
+                }
+            }
         }
-        
-        
+
         return cell
     }
     
+    func downloadSinglePhoto(photo: FlickrClient.Photo, _ completionForSingleDownload: (_ imageData: Data?) -> Void) {
+        if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(photo: photo) {
+            completionForSingleDownload(photoData)
+        }
+        
+    }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
