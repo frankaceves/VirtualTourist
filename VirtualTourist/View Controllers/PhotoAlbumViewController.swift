@@ -33,8 +33,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     @IBOutlet var collectionView: UICollectionView!
     
     
-    var downloadedPhotos: [Data] = []
+    var downloadedPhotos: [Data]?
     var photoInfo: [FlickrClient.Photo]?
+    var urlsToDownload: [URL]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,7 +76,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     fileprivate func downloadPhotos() {
         print("downloadPhotos")
         //FlickrClient.sharedInstance().downloadPhotosForLocation(lat: pin.latitude, lon: pin.longitude)
-        FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, result) in
+        FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, result, urls) in
             if (success == false) {
                 print("JSON DL did not complete")
                 return
@@ -86,14 +87,37 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 return
             }
             
-            print("photosInfo: \(result.photos.photo)")
+            guard let urls = urls else {
+                print("no url's returned in completion handler")
+                return
+            }
+            
+            //print("photosInfo: \(result.photos.photo)")
             self.photoInfo = result.photos.photo
             
             
+        
+            
+            
+            
+            
             DispatchQueue.main.async {
+                
+                for url in urls {
+                    let photoData = Photo(context: self.dataController.viewContext)
+                    photoData.location = self.pin
+                    photoData.name = (url.absoluteString)
+                    self.urlsToDownload?.append(url)
+                    print("photoData: \(photoData)")
+                }
+                
+                print("urlsToDownload count: \(self.urlsToDownload?.count)")
+                
                 self.reloadView()
             }
+            
         }
+        
     }
     
     func downloadPhotosOrFetchPhotos() {
@@ -111,6 +135,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         } else {
             print("there are no photos to load.")
         }
+        print("downloadedPhotos count [inside downloadOrFetch]: \(downloadedPhotos?.count)")
     }
     
     private func reloadView() {
@@ -140,7 +165,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             //print("fetched Objects count: \(fetchedObjects.count)")
             for photo in fetchedObjects {
                 if let imageData = photo.image {
-                    downloadedPhotos.append(imageData)
+                    downloadedPhotos?.append(imageData)
                 }
             }
         }
@@ -222,18 +247,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     }
     
     // MARK: - PHOTO DOWNLOAD FUNCTIONS
-    func getPhotos(lat: Double, lon: Double) {
-        print("getPhotos")
-        FlickrClient.sharedInstance().downloadPhotosForLocation(lat: lat, lon: lon)
-    }
+    
     
     // MARK: - PERSIST PHOTOS
     
     func savePhotos() {
-        if dataController.viewContext.hasChanges {
+        if self.dataController.viewContext.hasChanges {
             print("there were changes.  Attempting to save.")
             do {
-                try dataController.viewContext.save()
+                try self.dataController.viewContext.save()
             } catch {
                 print("an error occurred while saving: \(error.localizedDescription)")
             }
@@ -246,7 +268,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
         
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 21
+        return downloadedPhotos?.count ?? 1
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -267,43 +289,52 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
             if let imageData = fetchedObjects[indexPath.item].image {
-                print("dataPresent: \(imageData)")
+                //print("dataPresent: \(imageData)")
                 cell.locationPhoto.image = UIImage(data: imageData)
                 cell.locationPhoto.alpha = 1.0
                 activityIndicator.stopAnimating()
             }
         } else {
-            if let photoInfo = photoInfo {
-                //print("Photo Info: \(photoInfo)")
-//                if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(photo: photoInfo[indexPath.item]) {
-//                    cell.locationPhoto.image = UIImage(data: photoData)
-//                    activityIndicator.stopAnimating()
-//                    cell.locationPhoto.alpha = 1.0
+            if let photoInfo = photoInfo, photoInfo.count > 0 {
+                
+//                DispatchQueue.global().async {
+//                    self.downloadSinglePhoto(photo: photoInfo[indexPath.item], { (imageDataForCell) in
+//                        guard let image = imageDataForCell else {
+//                            print("single photo image error")
+//                            return
+//                        }
+//
+//                        print("image description: \(image.description)")
+//
+//                        if let imageForCell = UIImage(data: image) {
+//
+//                            //if the same photo is present, don't load
+//
+//                            DispatchQueue.main.async {
+//
+//                                cell.locationPhoto.image = imageForCell
+//                                cell.locationPhoto.alpha = 1.0
+//                                activityIndicator.stopAnimating()
+//                            }
+//
+//
+//
+//
+//
+//
+//
+//                        }
+//                    })
 //                }
-                DispatchQueue.global().async {
-                    self.downloadSinglePhoto(photo: photoInfo[indexPath.item], { (imageDataForCell) in
-                        guard let image = imageDataForCell else {
-                            print("single photo image error")
-                            return
-                        }
-                        
-                        if let imageForCell = UIImage(data: image) {
-                            DispatchQueue.main.async {
-                                cell.locationPhoto.image = imageForCell
-                                cell.locationPhoto.alpha = 1.0
-                                activityIndicator.stopAnimating()
-                            }
-                        }
-                    })
-                }
             }
         }
-
+        print("downloadedPhotos count [inside cellForItemIndex]: \(downloadedPhotos?.count)")
         return cell
     }
     
-    func downloadSinglePhoto(photo: FlickrClient.Photo, _ completionForSingleDownload: (_ imageData: Data?) -> Void) {
-        if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(photo: photo) {
+    func downloadSinglePhoto(photoURL: URL, _ completionForSingleDownload: (_ imageData: Data?) -> Void) {
+        print("downloading")
+        if let photoData = FlickrClient.sharedInstance().makeImageDataFrom1(flickrURL: photoURL) {
             completionForSingleDownload(photoData)
         }
         
@@ -311,17 +342,17 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        //print("DL Photo info: \(downloadedPhotos[indexPath.item])")
-        let photoToDelete = fetchedResultsController.object(at: indexPath)
-        //print("CD Photo info: \(photoToDelete.image!)")
-        
-        //downloadedPhotos.remove(at: indexPath.item)
-        collectionView.deleteItems(at: [indexPath])
-        
-        dataController.viewContext.delete(photoToDelete)
-        
-        savePhotos()
-        performFetch()
+//        print("DL Photo info: \(downloadedPhotos[indexPath.item])")
+//        let photoToDelete = fetchedResultsController.object(at: indexPath)
+//        print("CD Photo info: \(photoToDelete.image!)")
+//
+//        downloadedPhotos.remove(at: indexPath.item)
+//        collectionView.deleteItems(at: [indexPath])
+//
+//        dataController.viewContext.delete(photoToDelete)
+//
+//        savePhotos()
+//        performFetch()
     }
 
     /*

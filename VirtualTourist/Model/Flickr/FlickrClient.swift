@@ -38,6 +38,7 @@ class FlickrClient: NSObject {
     
     var photoResults: [Data] = []
     var searchResultsCount = 0
+    var photoURLs: [URL] = []
     
     // MARK: HELPER FUNCTIONS
     
@@ -60,7 +61,7 @@ class FlickrClient: NSObject {
         
         return components.url!
     }
-    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ photoInfo: Photos?) -> Void) {
+    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ photoInfo: Photos?, _ urls: [URL]?) -> Void) {
         let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
         let url = URL(string: urlString)
         
@@ -89,10 +90,30 @@ class FlickrClient: NSObject {
                 return
             }
             
+//            DispatchQueue.main.async {
+//                self.dataController.load(completion: {
+//                    print("loaded")
+//                    print("dataController info: \(self.dataController.viewContext.description)")
+//                })
+//            }
+            
+            
             // HOW MANY SEARCH RESULTS DID YOU GET?
             self.searchResultsCount = photosInfo.photos.photo.count
             print("search results count: \(self.searchResultsCount)")
-            completionHandlerForDownload(true, photosInfo)
+            
+            for photoData in photosInfo.photos.photo {
+                if let photoURL = self.makeURLfrom(flickrJSON: photoData) {
+                    
+                        self.photoURLs.append(photoURL)
+                    
+                    
+                }
+            }
+            print("photoURLs count: \(self.photoURLs.count)")
+            completionHandlerForDownload(true, photosInfo, self.photoURLs)
+            
+            
             
             // PULL PAGES INFO HERE
             //let totalPages = photosInfo.photos.pages
@@ -227,24 +248,18 @@ class FlickrClient: NSObject {
         }
     }
     
-    func makeImageDataFrom1(photo: Photo) -> Data?{
-        let farm = photo.farm
-        let server = photo.server
-        let id = photo.id
-        let secret = photo.secret
+    func makeURLfrom(flickrJSON: Photo) -> URL? {
+        let farm = flickrJSON.farm
+        let server = flickrJSON.server
+        let id = flickrJSON.id
+        let secret = flickrJSON.secret
         
         let urlString = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
-        let imageUrl = URL(string: urlString)!
-        //print("imageURL: \(imageUrl)")
-        
-//        if let imageData = try? Data(contentsOf: imageUrl) {
-//            //collect data only for CoreData
-//            //photoResults.append(imageData)
-//            return imageData
-//        } else {
-//            return nil
-//        }
-        return try? Data(contentsOf: imageUrl)
+        return URL(string: urlString)
+    }
+    
+    func makeImageDataFrom1(flickrURL: URL) -> Data? {
+        return try? Data(contentsOf: flickrURL)
     }
     
     // MARK: SHARED INSTANCE
