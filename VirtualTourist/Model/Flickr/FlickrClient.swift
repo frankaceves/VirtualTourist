@@ -91,13 +91,6 @@ class FlickrClient: NSObject {
                 return
             }
             
-//            DispatchQueue.main.async {
-//                self.dataController.load(completion: {
-//                    print("loaded")
-//                    print("dataController info: \(self.dataController.viewContext.description)")
-//                })
-//            }
-            
             
             // HOW MANY SEARCH RESULTS DID YOU GET?
             self.searchResultsCount = photosInfo.photos.photo.count
