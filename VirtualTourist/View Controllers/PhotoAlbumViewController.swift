@@ -44,6 +44,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         collectionView.dataSource = self
         collectionView.delegate = self
         configMap()
+        setupFetchedResultsController()
         // Do any additional setup after loading the view.
         //print("view Did Load")
     }
@@ -64,12 +65,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         //print("view DID disappear")
-        savePhotos()
+        //savePhotos()
         fetchedResultsController = nil
         clearAll()
     }
     
     func clearAll() {
+        print("Clearing all local arrays")
         photoInfo = []
         downloadedPhotos = []
         urlsToDownload = []
@@ -101,13 +103,21 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             self.photoInfo = result.photos.photo
             
             
-//            for url in urls {
-//                self.urlsToDownload.append(url)
-//            }
+            
+            
             
             self.urlsToDownload.append(contentsOf: urls)
             
             DispatchQueue.main.async {
+                
+                for url in urls {
+                    let photo = Photo(context: self.dataController.viewContext)
+                    photo.name = url.absoluteString
+                    photo.location = self.pin
+                    try? self.dataController.viewContext.save()
+                    print("saved CoreData photo info: \(photo)")
+                }
+                print("self.fetchedResultsController.fetchedObjects?.count: \(self.fetchedResultsController.fetchedObjects?.count)")
                 print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                 self.reloadView()
             }
@@ -124,7 +134,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 downloadPhotos()
             } else {
                 //FETCH PHOTOS
-                fetchPhotos()
+                //fetchPhotos()
                 reloadView()
             }
         } else {
@@ -211,6 +221,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //print("fetchRequest: \(fetchRequest)")
         fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
+        
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
     }
     
     func configMap() {
@@ -270,8 +286,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
         //print("downloadedPhotos count: \(downloadedPhotos.count)")
-        print("urlsToDownload count: \(urlsToDownload.count)")
-        return urlsToDownload.count
+        //print("urlsToDownload count: \(urlsToDownload.count)")
+        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -295,54 +311,38 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             activityIndicator.startAnimating()
         }
         
-        //if there are fetched images stored in downloaded photos, load them; otherwise, initiate download from downloadedURLs
-        if let fetchedObjects = fetchedResultsController.fetchedObjects, let data = fetchedObjects[indexPath.item].image {
-            print("showing fetched image")
-            cell.locationPhoto.image = UIImage(data: data)
+        let aPhoto = fetchedResultsController.object(at: indexPath)
+        if aPhoto.image != nil {
+            print("showing fetched image via FRC")
+            cell.locationPhoto.image = UIImage(data: aPhoto.image!)
             cell.locationPhoto.alpha = 1.0
             activityIndicator.stopAnimating()
             return cell
-        }
-        
-        
-        //initiate download
-        
-        let url = self.urlsToDownload[indexPath.item]
-        print("url: \(url)")
-        
-        DispatchQueue.global().async {
-    
-            if let image = self.downloadSinglePhoto1(photoURL: url) {
-                
-                //if the same photo is present, don't load
-                
-                let photo = Photo(context: self.dataController.viewContext)
-                
-                photo.name = url.absoluteString
-                photo.location = self.pin
-                photo.image = image
-                try? self.dataController.viewContext.save()
-                
-                DispatchQueue.main.async {
+        } else {
+            DispatchQueue.global().async {
+                if let urlString = aPhoto.name, let imageURL = URL(string: urlString), let image = self.downloadSinglePhoto1(photoURL: imageURL) {
                     
-                    // do not save to coreData here!!!
-                    if let imageForCell = UIImage(data: image), imageForCell != cell.locationPhoto.image {
-                        cell.locationPhoto.image = imageForCell
-                        cell.locationPhoto.alpha = 1.0
-                        activityIndicator.stopAnimating()
+                    //if the same photo is present, don't load
+                    
+                    
+                    DispatchQueue.main.async {
                         
-                    } else {
-                        print("did not set image")
+                        // do not save to coreData here!!!
+                        if let imageForCell = UIImage(data: image), imageForCell != cell.locationPhoto.image {
+                            cell.locationPhoto.image = imageForCell
+                            cell.locationPhoto.alpha = 1.0
+                            activityIndicator.stopAnimating()
+                            aPhoto.image = image
+                            try? self.dataController.viewContext.save()
+                            
+                        } else {
+                            print("did not set image")
+                        }
+                        
                     }
-                    
                 }
             }
         }
-        
-        
-        
-        
-        
         return cell
     }
     
