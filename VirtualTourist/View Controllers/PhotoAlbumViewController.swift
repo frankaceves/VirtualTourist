@@ -103,21 +103,19 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             self.photoInfo = result.photos.photo
             
             
-            
-            
-            
             self.urlsToDownload.append(contentsOf: urls)
             
             DispatchQueue.main.async {
-                
+                print("thread during url core data save: \(self.thread)")
                 for url in urls {
                     let photo = Photo(context: self.dataController.viewContext)
                     photo.name = url.absoluteString
                     photo.location = self.pin
                     try? self.dataController.viewContext.save()
-                    print("saved CoreData photo info: \(photo)")
+                    //print("saved CoreData photo info: \(photo)")
                 }
-                print("self.fetchedResultsController.fetchedObjects?.count: \(self.fetchedResultsController.fetchedObjects?.count)")
+//                print("reloading Data after url download")
+//                self.collectionView.reloadData()
                 print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
                 self.reloadView()
             }
@@ -141,7 +139,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             } else {
                 //FETCH PHOTOS
                 //fetchPhotos()
-                reloadView()
+                
             }
         } else {
             print("there are no photos to load.")
@@ -211,7 +209,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         print("Flickr photo results count: \(FlickrClient.sharedInstance().photoResults.count)")
         
         //download new set of photos
-        downloadPhotos()
+        //downloadPhotos()
     }
     
     func setupFetchedResultsController() {
@@ -300,6 +298,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         if indexPath.item == 0 {
             print("***Collection View: Cell For Row at Index Path***")
+            print("current thread: \(thread)")
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
@@ -326,13 +325,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             return cell
         } else {
             DispatchQueue.global().async {
+                print("thread before image download: \(self.thread)")
                 if let urlString = aPhoto.name, let imageURL = URL(string: urlString), let image = self.downloadSinglePhoto1(photoURL: imageURL) {
+                    
                     
                     //if the same photo is present, don't load
                     
                     
                     DispatchQueue.main.async {
-                        
+                        print("thread during image load/core data image save: \(self.thread)")
                         // do not save to coreData here!!!
                         if let imageForCell = UIImage(data: image), imageForCell != cell.locationPhoto.image {
                             cell.locationPhoto.image = imageForCell
@@ -373,16 +374,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
 //        savePhotos()
 //        performFetch()
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
+    
     
 }
-
