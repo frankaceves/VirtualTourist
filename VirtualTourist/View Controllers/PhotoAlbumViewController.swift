@@ -209,7 +209,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         print("Flickr photo results count: \(FlickrClient.sharedInstance().photoResults.count)")
         
         //download new set of photos
-        //downloadPhotos()
+        downloadPhotos { (success) in
+            if success == true {
+                print("success completion for new collection")
+                self.performFetch()
+                self.collectionView.reloadData()
+            }
+        }
     }
     
     func setupFetchedResultsController() {
