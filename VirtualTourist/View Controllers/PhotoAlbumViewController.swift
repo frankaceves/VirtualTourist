@@ -78,7 +78,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         FlickrClient.sharedInstance().clearFlickrResults()
     }
     
-    fileprivate func downloadPhotos() {
+    fileprivate func downloadPhotos(_ completionForDownload: @escaping (_ success: Bool) -> Void) {
         print("downloadPhotos")
         
         clearAll()
@@ -131,7 +131,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         print("downloadPhotosOrFetchPhotos")
         if let photoCount = pin.photos?.count {
             if photoCount <= 0 {
-                downloadPhotos()
+                downloadPhotos({ (success) in
+                    if success == true {
+                        print("success completion")
+                        self.performFetch()
+                        self.collectionView.reloadData()
+                    }
+                })
             } else {
                 //FETCH PHOTOS
                 //fetchPhotos()
