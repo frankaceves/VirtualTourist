@@ -117,7 +117,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
 //                print("reloading Data after url download")
 //                self.collectionView.reloadData()
                 print("urlsToDownload count: \(self.urlsToDownload.count)\nurls: \(self.urlsToDownload)")
-                self.reloadView()
+                completionForDownload(true)
             }
             
             
