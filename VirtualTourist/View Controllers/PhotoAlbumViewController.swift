@@ -65,7 +65,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         //print("view DID disappear")
-        //savePhotos()
+        savePhotos()
         fetchedResultsController = nil
         clearAll()
     }
