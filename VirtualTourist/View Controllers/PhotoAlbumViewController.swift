@@ -15,7 +15,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var dataController: DataController!
     
-    
+    var thread = Thread.current
     //the location passed from Travel Location Map VC, and whose photos will be displayed
     var pin: Pin!
     
