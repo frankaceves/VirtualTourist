@@ -88,19 +88,15 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         clearAll()
         //FlickrClient.sharedInstance().downloadPhotosForLocation(lat: pin.latitude, lon: pin.longitude)
-        FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, result, urls) in
-            if (success == false) {
-                print("JSON DL did not complete")
-                return
-            }
-            
-            guard let result = result else {
-                print("no results returned in completion handler")
-                return
-            }
+        FlickrClient.sharedInstance().downloadPhotosForLocation1(lat: pin.latitude, lon: pin.longitude) { (success, urls) in
             
             guard let urls = urls else {
                 print("no url's returned in completion handler")
+                return
+            }
+            
+            if (success == false) {
+                print("JSON DL did not complete")
                 return
             }
             
