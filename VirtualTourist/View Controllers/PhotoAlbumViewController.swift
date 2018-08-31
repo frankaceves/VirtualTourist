@@ -105,7 +105,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             }
             
             //print("photosInfo: \(result.photos.photo)")
-            self.photoInfo = result.photos.photo
+            //self.photoInfo = result.photos.photo
             
             
             self.urlsToDownload.append(contentsOf: urls)
@@ -201,7 +201,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 dataController.viewContext.delete(photo)
             }
             //fetchPhotos()
-            print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
+            //print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
             //savePhotos()
         } else {
             print("no fetched photos present to delete for NewCollection")
@@ -296,7 +296,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
-        print("numItemsInSection count: \(fetchedResultsController.sections?[section].numberOfObjects)")
+        //print("numItemsInSection count: \(fetchedResultsController.sections?[section].numberOfObjects)")
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
@@ -320,9 +320,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         let aPhoto = fetchedResultsController.object(at: indexPath)
         
-        print("aphoto BEFORE: \(aPhoto)")
+        //print("aphoto BEFORE: \(aPhoto)")
         if aPhoto.image != nil {
-            print("showing fetched image via FRC")
+            //print("showing fetched image via FRC")
             cell.locationPhoto.image = UIImage(data: aPhoto.image!)
             cell.locationPhoto.alpha = 1.0
             activityIndicator.stopAnimating()
@@ -334,7 +334,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 if let urlString = aPhoto.name, let imageURL = URL(string: urlString), let image = self.downloadSinglePhoto1(photoURL: imageURL) {
                     
                     // do not save to coreData here!!!
-                    print("image data present.")
+                    //print("image data present.")
                     DispatchQueue.main.async {
                         cell.locationPhoto.image = UIImage(data: image)
                         cell.locationPhoto.alpha = 1.0
@@ -348,9 +348,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                                 print("error saving in cellforItem: \(error.localizedDescription)")
                             }
                         }
-                        print("aphoto image: \(aPhoto.image)")
+                        //print("aphoto image: \(aPhoto.image)")
                         
-                        print("aphoto info after: \(aPhoto)")
+                        //print("aphoto info after: \(aPhoto)")
                     }
                     
                 }
