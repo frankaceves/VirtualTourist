@@ -55,7 +55,6 @@
                     </view>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="Rbk-wC-mEM">
                         <barButtonItem key="backBarButtonItem" title="Back" id="bU8-PK-a6b"/>
-                        <barButtonItem key="rightBarButtonItem" title="EDIT" id="B7A-9L-Is2"/>
                     </navigationItem>
                     <connections>
                         <outlet property="gestureRecognizer" destination="Yrx-Xf-8q0" id="jq2-Y8-UcL"/>
