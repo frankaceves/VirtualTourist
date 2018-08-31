@@ -62,7 +62,7 @@ class FlickrClient: NSObject {
         
         return components.url!
     }
-    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ photoInfo: Photos?, _ urls: [URL]?) -> Void) {
+    func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
         let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
         let url = URL(string: urlString)
         
@@ -91,34 +91,32 @@ class FlickrClient: NSObject {
                 return
             }
             
-            
             // HOW MANY SEARCH RESULTS DID YOU GET?
             self.searchResultsCount = photosInfo.photos.photo.count
             print("search results count: \(self.searchResultsCount)")
             
-            for photoData in photosInfo.photos.photo {
-                if let photoURL = self.makeURLfrom(flickrJSON: photoData) {
-                    
-                        self.photoURLs.append(photoURL)
-                    
-                    
-                }
-            }
-            print("photoURLs count: \(self.photoURLs.count)")
-            completionHandlerForDownload(true, photosInfo, self.photoURLs)
-            
-            
-            
             // PULL PAGES INFO HERE
-            //let totalPages = photosInfo.photos.pages
+            let totalPages = photosInfo.photos.pages
             
             // CREATE RANDOM PAGE
-            //let pageLimit = min(totalPages, 100)
-            //let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
-            //print("random page number = \(randomPageNumber)")
+            let pageLimit = min(totalPages, 100)
+            let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            print("random page number = \(randomPageNumber)")
             
             // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
-            
+            self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (success, urlsToDownload) in
+                guard let urlsToDownload = urlsToDownload else {
+                    print("no urls returned from random search")
+                    return
+                }
+                
+                if (success == true) {
+                    self.photoURLs.append(contentsOf: urlsToDownload)
+                    print("photoURLs count: \(self.photoURLs.count)")
+                    completionHandlerForDownload(success, urlsToDownload)
+                }
+            })
+                
         }
         task.resume()
     }
@@ -172,7 +170,7 @@ class FlickrClient: NSObject {
         
     }
     
-    func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ results: [Data]?, _ error: String?) -> Void) {
+    func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
         //print("***search for random photos called")
         //take urlString parameter from previous method
         //append page number to it
@@ -207,22 +205,22 @@ class FlickrClient: NSObject {
                 return
             }
             
+            var urlArray = [URL]()
+            
             for photo in randomPhotosInfo.photos.photo {
-                self.makeImageFrom(photo: photo)
+                if let photoURL = self.makeURLfrom(flickrJSON: photo) {
+                    urlArray.append(photoURL)
+                }
+                
+                
             }
             
             //print("photoResults count = \(self.photoResults.count)")
             //print("photoResults = \(self.photoResults)")
-            completionHandlerfForRandomPhotoSearch(self.photoResults, nil)
+            completionHandlerfForRandomPhotoSearch(true, urlArray)
             
         }
         task.resume()
-        //TODO: MOVE makeImageFrom func to secondary function
-        //TODO: SECONDARY FUNCTION should pass photo info (iteration)
-        //TODO: iterate through second set of results - make image from...
-            
-            //completion hander should be executed in second function with second network request.
-            //completionHandlerfForPhotoDownload(self.photoResults, nil)
         
     }
     
