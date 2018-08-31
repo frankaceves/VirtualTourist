@@ -226,21 +226,7 @@ class FlickrClient: NSObject {
         
     }
     
-    func makeImageFrom(photo: Photo){
-        let farm = photo.farm
-        let server = photo.server
-        let id = photo.id
-        let secret = photo.secret
-        
-        let urlString = "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg"
-        let imageUrl = URL(string: urlString)!
-        //print("imageURL: \(imageUrl)")
-        
-        if let imageData = try? Data(contentsOf: imageUrl) {
-            //collect data only for CoreData
-            photoResults.append(imageData)
-        }
-    }
+    
     
     func makeURLfrom(flickrJSON: Photo) -> URL? {
         let farm = flickrJSON.farm
