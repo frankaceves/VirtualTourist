@@ -15,6 +15,11 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     var dataController: DataController!
     
+    //indexes to track
+    var insertedIndexPaths: [IndexPath]!
+    var updatedIndexPaths: [IndexPath]!
+    var deletedIndexPaths: [IndexPath]!
+    
     var thread = Thread.current
     //the location passed from Travel Location Map VC, and whose photos will be displayed
     var pin: Pin!
@@ -65,7 +70,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         //print("view DID disappear")
-        savePhotos()
+        
         fetchedResultsController = nil
         clearAll()
     }
@@ -106,7 +111,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             self.urlsToDownload.append(contentsOf: urls)
             
             DispatchQueue.main.async {
-                print("thread during url core data save: \(self.thread)")
+                //print("thread during url core data save: \(self.thread)")
                 for url in urls {
                     let photo = Photo(context: self.dataController.viewContext)
                     photo.name = url.absoluteString
@@ -132,8 +137,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 downloadPhotos({ (success) in
                     if success == true {
                         print("success completion")
-                        self.performFetch()
-                        self.collectionView.reloadData()
                     }
                 })
             } else {
@@ -197,9 +200,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 print("photo info: \(photo.image!.description)")
                 dataController.viewContext.delete(photo)
             }
-            fetchPhotos()
+            //fetchPhotos()
             print("FRC final count count = \(fetchedResultsController.fetchedObjects?.count)")
-            savePhotos()
+            //savePhotos()
         } else {
             print("no fetched photos present to delete for NewCollection")
         }
@@ -212,8 +215,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         downloadPhotos { (success) in
             if success == true {
                 print("success completion for new collection")
-                self.performFetch()
-                self.collectionView.reloadData()
             }
         }
     }
@@ -225,7 +226,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         predicate = NSPredicate(format: "location == %@", pin)
         fetchRequest.predicate = predicate
         
-        let sortDescriptor = NSSortDescriptor(key: "image", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "location", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
         //print("fetchRequest: \(fetchRequest)")
@@ -295,8 +296,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     // MARK: - COLLECTION VIEW
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("***Collection View: Number of items in section***")
-        //print("downloadedPhotos count: \(downloadedPhotos.count)")
-        //print("urlsToDownload count: \(urlsToDownload.count)")
+        print("numItemsInSection count: \(fetchedResultsController.sections?[section].numberOfObjects)")
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
@@ -304,25 +304,23 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         
         if indexPath.item == 0 {
             print("***Collection View: Cell For Row at Index Path***")
-            print("current thread: \(thread)")
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! LocationImageCollectionViewCell
-        cell.locationPhoto.image = nil
+        //cell.locationPhoto.image = nil
+        
         
         let activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: .whiteLarge)
         activityIndicator.frame = cell.bounds
         cell.backgroundColor = UIColor.darkGray
         cell.locationPhoto.alpha = 0.5
         cell.addSubview(activityIndicator)
-        
-        
-        if cell.locationPhoto.image == nil {
-            cell.locationPhoto.image = #imageLiteral(resourceName: "Placeholder - 120x120")
-            activityIndicator.startAnimating()
-        }
+        cell.locationPhoto.image = #imageLiteral(resourceName: "Placeholder - 120x120")
+        activityIndicator.startAnimating()
         
         let aPhoto = fetchedResultsController.object(at: indexPath)
+        
+        print("aphoto BEFORE: \(aPhoto)")
         if aPhoto.image != nil {
             print("showing fetched image via FRC")
             cell.locationPhoto.image = UIImage(data: aPhoto.image!)
@@ -330,32 +328,36 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
             activityIndicator.stopAnimating()
             return cell
         } else {
-            DispatchQueue.global().async {
-                print("thread before image download: \(self.thread)")
+            
+            
+            DispatchQueue.global(qos: .background).async {
                 if let urlString = aPhoto.name, let imageURL = URL(string: urlString), let image = self.downloadSinglePhoto1(photoURL: imageURL) {
                     
-                    
-                    //if the same photo is present, don't load
-                    
-                    
+                    // do not save to coreData here!!!
+                    print("image data present.")
                     DispatchQueue.main.async {
-                        print("thread during image load/core data image save: \(self.thread)")
-                        // do not save to coreData here!!!
-                        if let imageForCell = UIImage(data: image), imageForCell != cell.locationPhoto.image {
-                            cell.locationPhoto.image = imageForCell
-                            cell.locationPhoto.alpha = 1.0
-                            activityIndicator.stopAnimating()
+                        cell.locationPhoto.image = UIImage(data: image)
+                        cell.locationPhoto.alpha = 1.0
+                        activityIndicator.stopAnimating()
+                        if aPhoto.image == nil {
+                            print("still nil")
                             aPhoto.image = image
-                            try? self.dataController.viewContext.save()
-                            
-                        } else {
-                            print("did not set image")
+                            do {
+                                try self.dataController.viewContext.save()
+                            } catch {
+                                print("error saving in cellforItem: \(error.localizedDescription)")
+                            }
                         }
+                        print("aphoto image: \(aPhoto.image)")
                         
+                        print("aphoto info after: \(aPhoto)")
                     }
+                    
                 }
             }
+            
         }
+        
         return cell
     }
     
@@ -368,18 +370,58 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-//        print("DL Photo info: \(downloadedPhotos[indexPath.item])")
-//        let photoToDelete = fetchedResultsController.object(at: indexPath)
-//        print("CD Photo info: \(photoToDelete.image!)")
-//
-//        downloadedPhotos.remove(at: indexPath.item)
-//        collectionView.deleteItems(at: [indexPath])
-//
-//        dataController.viewContext.delete(photoToDelete)
-//
-//        savePhotos()
-//        performFetch()
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+        print("did select: \(photoToDelete.image!)")
+
+        
+        //collectionView.deleteItems(at: [indexPath])
+
+        dataController.viewContext.delete(photoToDelete)
     }
     
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        //clear arrays
+        insertedIndexPaths = [IndexPath]()
+        updatedIndexPaths = [IndexPath]()
+        deletedIndexPaths = [IndexPath]()
+    }
     
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            print("insert object")
+            insertedIndexPaths.append(newIndexPath!)
+            break
+        case .update:
+            print("update object")
+            updatedIndexPaths.append(indexPath!)
+            break
+        case .delete:
+            print("delete object")
+            deletedIndexPaths.append(indexPath!)
+            break
+        default:
+            print("DEFAULT - no other action needed")
+            break
+        }
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        
+        collectionView.performBatchUpdates({() -> Void in
+            for indexPath in self.insertedIndexPaths {
+                self.collectionView.insertItems(at: [indexPath])
+            }
+            
+            for indexPath in self.updatedIndexPaths {
+                print("indexPathinfo: \(indexPath)")
+                self.collectionView.reloadItems(at: [indexPath])
+            }
+            
+            for indexPath in self.deletedIndexPaths {
+                print("indexPathinfo: \(indexPath)")
+                self.collectionView.deleteItems(at: [indexPath])
+            }
+        }, completion: nil)
+    }
 }
