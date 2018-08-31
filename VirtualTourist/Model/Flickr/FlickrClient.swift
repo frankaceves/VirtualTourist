@@ -116,59 +116,11 @@ class FlickrClient: NSObject {
                     completionHandlerForDownload(success, urlsToDownload)
                 }
             })
-                
+            
         }
         task.resume()
     }
         
-    func downloadPhotosForLocation(lat: Double, lon: Double) /*, _ completionHandlerfForPhotoDownload: @escaping (_ results: [Data]?, _ error: String?) -> Void */ {
-        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&format=json&nojsoncallback=1"
-        let url = URL(string: urlString)
-        
-        let session = URLSession.shared
-        
-        let request = URLRequest(url: url!)
-        //print("request: \(request)")
-        
-        let task = session.dataTask(with: request) { (data, response, error) in
-            guard (error == nil) else{
-                print("error downloading photos: \(error!)")
-                return
-            }
-            
-            guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
-                print("request returned status code other than 2XX")
-                return
-            }
-            
-            guard let data = data else {
-                print("could not download data")
-                return
-            }
-            
-            guard let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
-                print("error in decoding process")
-                return
-            }
-            
-            // HOW MANY SEARCH RESULTS DID YOU GET?
-            self.searchResultsCount = photosInfo.photos.photo.count
-            print("search results count: \(self.searchResultsCount)")
-            
-            // PULL PAGES INFO HERE
-            let totalPages = photosInfo.photos.pages
-            
-            // CREATE RANDOM PAGE
-            //let pageLimit = min(totalPages, 100)
-            //let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
-            //print("random page number = \(randomPageNumber)")
-            
-            // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
-            
-        }
-        task.resume()
-        
-    }
     
     func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
         //print("***search for random photos called")
