@@ -33,6 +33,7 @@ class FlickrClient: NSObject {
         let server: String
         let id: String
         let secret: String
+        let url_m: String
     }
     
     
