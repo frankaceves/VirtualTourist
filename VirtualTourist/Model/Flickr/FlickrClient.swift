@@ -160,12 +160,11 @@ class FlickrClient: NSObject {
             
             var urlArray = [URL]()
             
+            //use url in result
             for photo in randomPhotosInfo.photos.photo {
-                if let photoURL = self.makeURLfrom(flickrJSON: photo) {
+                if let photoURL = URL(string: photo.url_m) {
                     urlArray.append(photoURL)
                 }
-                
-                
             }
             
             //print("photoResults count = \(self.photoResults.count)")
