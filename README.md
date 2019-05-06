@@ -3,7 +3,7 @@
 ## Description
 An app built within Udacity's [iOS Nanodegree Program](https://udacity.com/nanodegrees/nd003).  Users can drop a pin on the map, and view photos from that location, provided by Flickr's public API.  Utilizes CoreData to persist photos on device, UIKit, MapKit, UICollectionView, Fetch Requests.
 
-![CollectionView](ReadMeImages/vt-collection-full.png)
+![CollectionView](ReadMeImages/vt-map-pin.png) ![CollectionView](ReadMeImages/vt-collection-full.png)
 
 ## Usage
 * No pre-work needed.  Just build and run (use Master branch).
