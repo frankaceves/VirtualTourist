@@ -43,6 +43,10 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     var photoInfo: [FlickrClient.Photo]?
     var urlsToDownload = [URL]()
     
+    // layout related
+    private var itemsPerRow: CGFloat = 3
+    let sectionInsets = UIEdgeInsets(top: 8.0, left: 8.0, bottom: 8.0, right: 8.0)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         mapView.delegate = self
@@ -419,5 +423,23 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                 self.collectionView.deleteItems(at: [indexPath])
             }
         }, completion: nil)
+    }
+}
+
+extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let paddingSpace = sectionInsets.left * (itemsPerRow + 1)
+        let availableWidth = view.frame.width - paddingSpace
+        let widthPerItem = availableWidth / itemsPerRow
+        
+        return CGSize(width: widthPerItem, height: widthPerItem)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return sectionInsets
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return sectionInsets.left
     }
 }
