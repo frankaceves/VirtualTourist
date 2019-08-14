@@ -38,7 +38,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet var collectionView: UICollectionView!
     
-    
     var downloadedPhotos = [Data]()
     var photoInfo: [FlickrClient.Photo]?
     var urlsToDownload = [URL]()
@@ -197,7 +196,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
             print("confirming fetched count: \(fetchedObjects.count)")
             for photo in fetchedObjects {
-                print("photo info: \(photo.image!.description)")
+                //print("photo info: \(photo.image!.description)")
                 dataController.viewContext.delete(photo)
             }
             //fetchPhotos()
