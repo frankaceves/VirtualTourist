@@ -21,6 +21,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     var dataController: DataController!
     
     var fetchedResultsController: NSFetchedResultsController<Pin>!
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
