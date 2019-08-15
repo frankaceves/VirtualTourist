@@ -42,7 +42,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     fileprivate func loadPins() {
         if let fetchedObjects = fetchedResultsController.fetchedObjects {
-            //print("total objects with ID: \(String(describing: fetchedObjects.count))")
             
             var annotations = [MKPointAnnotation]()
             
@@ -93,7 +92,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         if gestureRecognizer.state == .began {
             let point = gestureRecognizer.location(in: self.mapView)
             let coordinate = self.mapView.convert(point, toCoordinateFrom: self.mapView)
-            //print("coordinate: \(coordinate)")
             
             //add map annotation
             let annotation = MKPointAnnotation()
@@ -136,7 +134,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        //print("annotation coordinate: \(view.annotation!.coordinate)")
         if checkForMatching(coordinate: view.annotation!.coordinate) {
             self.performSegue(withIdentifier: "showPhotoAlbum", sender: self)
         } else {
@@ -146,11 +143,10 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        print("region changed\nCurrentRegion: \(mapView.region)\nSpan: \(mapView.region.span)\nCenter: \(mapView.region.center)")
+        //print("region changed\nCurrentRegion: \(mapView.region)\nSpan: \(mapView.region.span)\nCenter: \(mapView.region.center)")
         let mapData = ["lat":mapView.region.span.latitudeDelta, "lon":mapView.region.span.longitudeDelta, "centerLat":mapView.region.center.latitude, "centerLon":mapView.region.center.longitude] as [String : Any]
-        defaults.set(mapData, forKey: "mapZoom")
         
-        //print("userDefaults: \(defaults.value(forKey: "mapZoom"))")
+        defaults.set(mapData, forKey: "mapZoom")
     }
     
     //check selected annotation's coordinate, and compare to fetched objects
@@ -165,7 +161,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
             for pin in savedPins {
                 
                 if pin.latitude == coordinate.latitude && pin.longitude == coordinate.longitude{
-                    //self.objectID = pin.objectID
                     self.pin = pin
                     return true
                 } else {
