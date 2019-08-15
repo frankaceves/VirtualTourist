@@ -33,9 +33,7 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setupFetchedResultsController()
-//        if let pin = pin {
-//            print("Pin as of loading: \(pin)")
-//        }
+        configureMapView()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
