@@ -147,8 +147,16 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         }
     }
     
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        print("region changed\nCurrentRegion: \(mapView.region)\nSpan: \(mapView.region.span)\nCenter: \(mapView.region.center)")
+        let mapData = ["lat":mapView.region.span.latitudeDelta, "lon":mapView.region.span.longitudeDelta, "centerLat":mapView.region.center.latitude, "centerLon":mapView.region.center.longitude] as [String : Any]
+        defaults.set(mapData, forKey: "mapZoom")
+        
+        //print("userDefaults: \(defaults.value(forKey: "mapZoom"))")
+    }
+    
     //check selected annotation's coordinate, and compare to fetched objects
-    func checkForMatching(coordinate: CLLocationCoordinate2D) -> Bool {
+    private func checkForMatching(coordinate: CLLocationCoordinate2D) -> Bool {
         do {
             try fetchedResultsController.performFetch()
         } catch {
@@ -170,10 +178,15 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         return false
     }
     
-    
-    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        //print("region changed")
-        //print("mapView.region: \(mapView.region)")
+    private func configureMapView() {
+        if let settings = defaults.dictionary(forKey: "mapZoom") {
+            print("success: \(settings)")
+            let span = MKCoordinateSpan(latitudeDelta: settings["lat"] as! CLLocationDegrees, longitudeDelta: settings["lon"] as! CLLocationDegrees)
+            let center = CLLocationCoordinate2D(latitude: settings["centerLat"] as! CLLocationDegrees, longitude: settings["centerLon"] as! CLLocationDegrees)
+            
+            let region = MKCoordinateRegion(center: center, span: span)
+            mapView.setRegion(region, animated: true)
+        }
     }
     
     // MARK: - NAVIGATION
