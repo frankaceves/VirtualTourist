@@ -28,10 +28,6 @@ class TravelLocationMapViewController: UIViewController, MKMapViewDelegate, NSFe
         // Do any additional setup after loading the view, typically from a nib.
         mapView.delegate = self
         setupFetchedResultsController()
-        
-//        if let pin = pin {
-//            print("Pin as of loading: \(pin)")
-//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
