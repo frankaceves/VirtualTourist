@@ -35,6 +35,11 @@ class FlickrClient: NSObject {
         let secret: String
         let url_m: String
     }
+    struct APIError: Decodable {
+        let stat: String
+        let code: Int
+        let message: String
+    }
     
     
     var photoResults: [Data] = []
@@ -63,6 +68,11 @@ class FlickrClient: NSObject {
         
         return components.url!
     }
+    enum DataTaskError {
+        case statusCodeNot2XX
+        case couldNotDownloadData
+        case jsonDecodingError
+    }
     func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
         let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&extras=url_m&format=json&nojsoncallback=1"
         let url = URL(string: urlString)
@@ -77,18 +87,22 @@ class FlickrClient: NSObject {
                 return
             }
             
+            // NOTE: - STATUS CODE RETURNS 200 EVEN WITH INVALID API KEY OR OTHER BAD PARAMS
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
-                print("request returned status code other than 2XX")
+                print("\(DataTaskError.statusCodeNot2XX)")
                 return
             }
             
             guard let data = data else {
-                print("could not download data")
+                print("\(DataTaskError.couldNotDownloadData)")
                 return
             }
             
             guard let photosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
-                print("error in decoding process")
+                print("\(DataTaskError.jsonDecodingError)")
+                if let result = try? JSONDecoder().decode(APIError.self, from: data) {
+                    print(result.message)
+                }
                 return
             }
             
@@ -124,18 +138,15 @@ class FlickrClient: NSObject {
         
     
     func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
-        //print("***search for random photos called")
         //take urlString parameter from previous method
         //append page number to it
         let urlStringWithPageNumber = urlString.appending("&page=\(pageNumber)")
-        //print("new urlString: \(urlStringWithPageNumber)")
         
         let url = URL(string: urlStringWithPageNumber)
         
         let session = URLSession.shared
         
         let request = URLRequest(url: url!)
-        //print("request: \(request)")
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
@@ -167,8 +178,6 @@ class FlickrClient: NSObject {
                 }
             }
             
-            //print("photoResults count = \(self.photoResults.count)")
-            //print("photoResults = \(self.photoResults)")
             completionHandlerfForRandomPhotoSearch(true, urlArray)
             
         }
