@@ -16,7 +16,7 @@ extension FlickrClient {
         struct Flickr {
             static let APIScheme = "https"
             static let APIHost = "api.flickr.com"
-            static let APIPath = "/services/rest"
+            static let APIPath = "/services/rest/"
         }
         
         // MARK: Flickr Parameter Keys
@@ -27,8 +27,10 @@ extension FlickrClient {
             static let Longitude = "lon"
             static let Radius = "radius"
             static let ResultsPerPage = "per_page"
+            static let Extras = "extras"
             static let format = "format"
             static let NoJSONCallback = "nojsoncallback"
+            static let Page = "page"
         }
         
         // MARK: Flickr Parameter Values
@@ -37,9 +39,9 @@ extension FlickrClient {
             static let APIKey = "ad57c918d7705a17a075a02858b94f59"
             static let ResponseRadius = "1" // 1 mile radius
             static let ResponseResultsPerPage = "100"
+            static let ResponseExtras = "url_m"
             static let ResponseFormat = "json"
             static let DisableJSONCallback = "1" // 1 means "yes"
-            
         }
     }
 }

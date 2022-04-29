@@ -75,6 +75,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
         //print("view DID disappear")
         
         fetchedResultsController = nil
+        savePhotos()
         clearAll()
     }
     
@@ -116,7 +117,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                     photo.name = url.absoluteString
                     photo.location = self.pin
                     try? self.dataController.viewContext.save()
-                    //print("saved CoreData photo info: \(photo)")
+                    print("saved CoreData photo info: \(photo)")
                 }
 //                print("reloading Data after url download")
 //                self.collectionView.reloadData()
@@ -280,12 +281,16 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
     // MARK: - PERSIST PHOTOS
     
     func savePhotos() {
+        var errorCount = 0
         if self.dataController.viewContext.hasChanges {
             print("there were changes.  Attempting to save.")
             do {
                 try self.dataController.viewContext.save()
             } catch {
                 print("an error occurred while saving: \(error.localizedDescription)")
+                let error = error as NSError
+                print(error.userInfo)
+                errorCount += 1
             }
         } else {
             print("no changes were made.  Not saving.")
@@ -341,15 +346,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDataSource, MK
                         if aPhoto.image == nil {
                             print("still nil")
                             aPhoto.image = image
-                            do {
-                                try self.dataController.viewContext.save()
-                            } catch {
-                                print("error saving in cellforItem: \(error.localizedDescription)")
-                            }
+//                            do {
+//                                try self.dataController.viewContext.save()
+//                            } catch {
+//                                let validationError = error as NSError
+//                                print("error saving in cellforItem: \(validationError)")
+//                            }
                         }
-                        //print("aphoto image: \(aPhoto.image)")
-                        
-                        //print("aphoto info after: \(aPhoto)")
                     }
                     
                 }

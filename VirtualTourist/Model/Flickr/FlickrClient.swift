@@ -33,7 +33,7 @@ class FlickrClient: NSObject {
         let server: String
         let id: String
         let secret: String
-        let url_m: String
+        let url_m: String?
     }
     struct APIError: Decodable {
         let stat: String
@@ -74,12 +74,33 @@ class FlickrClient: NSObject {
         case jsonDecodingError
     }
     func downloadPhotosForLocation1(lat: Double, lon: Double, _ completionHandlerForDownload: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
-        let urlString = "https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ad57c918d7705a17a075a02858b94f59&lat=\(lat)&lon=\(lon)&radius=1&per_page=21&extras=url_m&format=json&nojsoncallback=1"
-        let url = URL(string: urlString)
+        
+        var urlComponents = URLComponents()
+        urlComponents.scheme = Constants.Flickr.APIScheme
+        urlComponents.host = Constants.Flickr.APIHost
+        urlComponents.path = Constants.Flickr.APIPath
+        
+        let searchQueryItems = [
+            URLQueryItem(name: Constants.FlickrParameterKeys.Method, value: Constants.FlickrParameterValues.SearchMethod),
+            URLQueryItem(name: Constants.FlickrParameterKeys.APIKey, value: Constants.FlickrParameterValues.APIKey),
+            URLQueryItem(name: Constants.FlickrParameterKeys.Latitude, value: String(lat)),
+            URLQueryItem(name: Constants.FlickrParameterKeys.Longitude, value: String(lon)),
+            URLQueryItem(name: Constants.FlickrParameterKeys.Radius, value: Constants.FlickrParameterValues.ResponseRadius),
+            URLQueryItem(name: Constants.FlickrParameterKeys.ResultsPerPage, value: Constants.FlickrParameterValues.ResponseResultsPerPage),
+            URLQueryItem(name: Constants.FlickrParameterKeys.Extras, value: Constants.FlickrParameterValues.ResponseExtras),
+            URLQueryItem(name: Constants.FlickrParameterKeys.format, value: Constants.FlickrParameterValues.ResponseFormat),
+            URLQueryItem(name: Constants.FlickrParameterKeys.NoJSONCallback, value: Constants.FlickrParameterValues.DisableJSONCallback)
+            ]
+        urlComponents.queryItems = searchQueryItems
+        
+        guard let testURL = urlComponents.url else {
+            // TODO: HANDLE ERROR
+            fatalError("can't construct url from components")
+        }
         
         let session = URLSession.shared
         
-        let request = URLRequest(url: url!)
+        let request = URLRequest(url: testURL)
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
@@ -114,75 +135,79 @@ class FlickrClient: NSObject {
             let totalPages = photosInfo.photos.pages
             
             // CREATE RANDOM PAGE
-            let pageLimit = min(totalPages, 100)
-            let randomPageNumber = Int(arc4random_uniform(UInt32(pageLimit))) + 1
+            //let pageLimit = min(totalPages, 100)
+            let randomPageNumber = Int(arc4random_uniform(UInt32(totalPages)))// + 1
             print("random page number = \(randomPageNumber)")
             
             // TODO: CALL FUNC THAT EXECUTES SECOND NETWORK REQUEST WITH PAGE NUMBER
-            self.searchForRandomPhotos(urlString: urlString, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (success, urlsToDownload) in
+            self.searchForRandomPhotosUsingRequest(request: request, pageNumber: randomPageNumber, completionHandlerfForRandomPhotoSearch: { (success, urlsToDownload) in
                 guard let urlsToDownload = urlsToDownload else {
                     print("no urls returned from random search")
                     return
                 }
                 
-                if (success == true) {
+                if success {
                     self.photoURLs.append(contentsOf: urlsToDownload)
                     print("photoURLs count: \(self.photoURLs.count)")
                     completionHandlerForDownload(success, urlsToDownload)
+                } else {
+                    print("error with searchForRandomPageUsingRequest")
                 }
             })
             
         }
         task.resume()
     }
-        
     
-    func searchForRandomPhotos(urlString: String, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
+    func searchForRandomPhotosUsingRequest(request: URLRequest, pageNumber: Int, completionHandlerfForRandomPhotoSearch: @escaping (_ result: Bool, _ urls: [URL]?) -> Void) {
         //take urlString parameter from previous method
         //append page number to it
-        let urlStringWithPageNumber = urlString.appending("&page=\(pageNumber)")
+        guard let requestURLString = request.url?.absoluteString else {
+            // TODO: HANDLE ERROR - send failure completion with alert presentation
+            fatalError("could not get url string from request")
+        }
+        let urlStringWithPageNumber = requestURLString.appending("&\(Constants.FlickrParameterKeys.Page)=\(pageNumber)")
         
-        let url = URL(string: urlStringWithPageNumber)
+        guard let url = URL(string: urlStringWithPageNumber) else {
+            // TODO: HANDLE ERROR - send failure completion with alert presentation
+            fatalError("could not create URL from urlStringWithPage param")
+        }
         
         let session = URLSession.shared
-        
-        let request = URLRequest(url: url!)
+        let request = URLRequest(url: url)
         
         let task = session.dataTask(with: request) { (data, response, error) in
             guard (error == nil) else{
-                print("error downloading photos: \(error!)")
-                return
+                // TODO: HANDLE ERROR - send failure completion with alert presentation
+                fatalError("error downloading photos: \(error!)")
             }
             
             guard let statusCode = (response as? HTTPURLResponse)?.statusCode, statusCode >= 200 && statusCode <= 299 else {
-                print("request returned status code other than 2XX")
-                return
+                // TODO: HANDLE ERROR - send failure completion with alert presentation
+                fatalError("request returned status code other than 2XX")
             }
             
             guard let data = data else {
-                print("could not download data")
-                return
+                // TODO: HANDLE ERROR - send failure completion with alert presentation
+                fatalError("could not download data: \(#function)")
             }
             
-            guard let randomPhotosInfo = try? JSONDecoder().decode(Photos.self, from: data) else {
-                print("error in decoding process")
-                return
-            }
             
+            // move to do catch block for error handling
             var urlArray = [URL]()
-            
-            //use url in result
-            for photo in randomPhotosInfo.photos.photo {
-                if let photoURL = URL(string: photo.url_m) {
-                    urlArray.append(photoURL)
+            do {
+                let randomPhotosInfo = try JSONDecoder().decode(Photos.self, from: data)
+                randomPhotosInfo.photos.photo.forEach { photo in
+                    if let photoURLString = photo.url_m, let photoURL = URL(string: photoURLString) {
+                          urlArray.append(photoURL)
+                    }
                 }
+                completionHandlerfForRandomPhotoSearch(true, urlArray)
+            } catch {
+                fatalError("error in decoding process: \(error)")
             }
-            
-            completionHandlerfForRandomPhotoSearch(true, urlArray)
-            
         }
         task.resume()
-        
     }
     
     func makeImageDataFrom1(flickrURL: URL) -> Data? {
